@@ -10,22 +10,21 @@ export default function Calendar() {
         alignItems: "center",
       }}
     >
-      <View style={styles.container}>
-        <Text style={styles.centralText}>Bienvenue à la capsule !</Text></View>
+        <View style={styles.title}>
+
+          <Text style={styles.centralText}>Bienvenue à la capsule !</Text>
+        </View>
     </View>
   );
 }
 
  const styles = StyleSheet.create({
-  container : {
-    backgroundColor : "blue",
-    width : "100%",
-    height : "100%",
-    display: "flex",
-    justifyContent : "center",
-    alignItems: "center"
-  },
   centralText : {
     color : "white"
+  },
+  title : {
+    backgroundColor : "white",
+    width : "100%",
+    height : "10%",
   }
  })
