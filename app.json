@@ -33,6 +33,11 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],[
+        "expo-camera",
+        {
+          "cameraPermission": "Allow dailyTracker to access your camera"
+        }
       ]
     ],
     "experiments": {

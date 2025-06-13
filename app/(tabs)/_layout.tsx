@@ -27,6 +27,12 @@ export default function TabLayout() {
         tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'calendar' : 'calendar-outline'} color={color} size={24}/>
           ) }} />
+      <Tabs.Screen name="camera" options={{
+        headerShown : false,
+        title: 'Camera', 
+        tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'camera' : 'calendar-outline'} color={color} size={24}/>
+          ) }} />
     </Tabs>
   );
 }
