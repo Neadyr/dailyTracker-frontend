@@ -3,6 +3,9 @@ import { Image} from "expo-image"
 import { useState, useRef } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { blue } from 'react-native-reanimated/lib/typescript/Colors';
+import { useIsFocused } from '@react-navigation/native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
 
 export default function Camera() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -10,13 +13,14 @@ export default function Camera() {
   const [preview, setPreview] = useState<string | null>("")
   const cameraRef = useRef<CameraView | null>(null);
 
+  const isFocused = useIsFocused();
+
   const blurhash = '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
 
-  if (!permission) {
+  if (!permission || !isFocused) {
     // Camera permissions are still loading.
     return <View />;
   }
-
 
   if (!permission.granted) {
     // Camera permissions are not granted yet.
@@ -29,19 +33,20 @@ export default function Camera() {
   }
 
     const takePicture = async () => {    
-        console.log("coucou")             
     const photo: any = await cameraRef.current?.takePictureAsync({ quality: 0.3 }); // Javascript
     // const photo: any = await cameraRef.current?.takePictureAsync({ quality: 0.3 }); // Typescript
     photo && setPreview(photo.uri) || "";         
   };
 
-  function toggleCameraFacing() {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
-  }
-console.log(preview)
+//   function toggleCameraFacing() {
+//     setFacing(current => (current === 'back' ? 'front' : 'back'));
+//   }
 
+  const goBack = () => {
+    //Closing modal
+    console.log("Going back")
+  }
   const renderPicture = () => {
-    console.log("PICTOUUURE");
     const retakePicture = () => {
         setPreview(null)
     }
@@ -59,16 +64,17 @@ console.log(preview)
   }
 
   const renderCameraView = () => {
-    console.log("CAMIRAVIOU");
 
     return (
         <CameraView style={styles.camera} facing={facing} ref={(ref) => (cameraRef.current = ref)}>
             <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
+            {/* <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
                 <Text style={styles.text}>Flip Camera</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-                <Text style={styles.text} onPress={takePicture}>Take Picture</Text>
+            </TouchableOpacity> */}
+            <View style={styles.topButtonContainer}>
+              <Ionicons name="arrow-back-outline" size={48} color="white" onPress={goBack}></Ionicons>
+            </View>
+            <TouchableOpacity onPress={takePicture} style={styles.shotButton} >
             </TouchableOpacity>
             </View>
         </CameraView>
@@ -97,9 +103,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 64,
+    flexDirection: 'column',
+    alignItems : "center",
+    justifyContent : "space-between",
+    paddingVertical : "15%",
   },
   button: {
     flex: 1,
@@ -122,5 +129,27 @@ const styles = StyleSheet.create({
     width: 300,
     height: 150,
     backgroundColor: "green"
+  },
+  shotButton : {
+    width : 100,
+    height: 100,
+    borderRadius : "50%",
+    borderWidth: 5,
+    borderColor : "#ffffff",
+    opacity: 0.9
+  },
+  return :{
+    width: 50,
+    height : 50, 
+    backgroundColor : "red"
+
+  },
+  topButtonContainer : {
+    width : "100%",
+    height : "10%",
+    flexDirection : "row",
+    justifyContent : "flex-end",
+    alignItems : "center",
+    paddingHorizontal: "10%"
   }
 });
