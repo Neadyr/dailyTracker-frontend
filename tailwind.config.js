@@ -5,6 +5,19 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {},
+    keyframes: {
+      buttonBounce: {
+        "0%": { transform: "scale(0)" },
+        "40%": { transform: "scale(1.1)" },
+        "60%": { transform: "scale(0.9)" },
+        "80%": { transform: "scale(1.02)" },
+        "90%": { transform: "scale(0.98)" },
+        "100%": { transform: "scale(1)" },
+      },
+    },
+    animation: {
+      buttonBounce: "buttonBounce",
+    },
   },
   plugins: [],
 };
