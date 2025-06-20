@@ -1,43 +1,53 @@
 import { View, TouchableOpacity, Text } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import react, { useState } from "react";
-import Animated, {
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
-
-import { Coffee } from "lucide-react-native";
+import { useState, useEffect } from "react";
+import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
 
 export default function Bubble(props: any) {
-  const [isSelected, setIsSelected] = useState(false);
-
   const position = useSharedValue(-7);
+  const [isUsable, setIsUsable] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!props.isSelected && props.from === "itself") {
+      position.value = withSpring(position.value - 6, {
+        duration: 350,
+        dampingRatio: 0.2,
+      });
+    } else if (!props.isSelected && props.from === "trash") {
+      position.value = withSpring(position.value - 4, {
+        duration: 350,
+        dampingRatio: 0.2,
+      });
+    } else {
+      position.value = position.value - 2;
+    }
+    setTimeout(() => {
+      setIsUsable(true);
+    }, 350);
+  }, [props.isSelected]);
 
   const press = () => {
-    props.addToSelection(props.buttonName);
-    setIsSelected(!isSelected);
-    isSelected
-      ? (position.value = position.value + 2)
-      : (position.value = position.value + 6);
+    if (isUsable) {
+      props.isSelected
+        ? (position.value = position.value + 2)
+        : (position.value = position.value + 6);
+    } else {
+      return;
+    }
   };
 
   const release = () => {
-    isSelected
-      ? (position.value = position.value - 2)
-      : (position.value = withSpring(position.value - 6, {
-          duration: 350,
-          dampingRatio: 0.2,
-        }));
+    if (isUsable) {
+      props.addToSelection({ buttonName: props.buttonName, trigger: "itself" });
+      setIsUsable(false);
+    } else {
+      return;
+    }
   };
-
-  let iconColor;
-  isSelected ? (iconColor = "#ffd33d") : (iconColor = "#b1b1b1");
 
   return (
     <View
       className={
-        isSelected
+        props.isSelected
           ? "relative w-[60px] h-[60px] rounded-xl justify-center items-end bg-[#fff1c0] px-4 shadow z-20 mb-5"
           : "relative w-[60px] h-[60px] rounded-xl justify-center items-end bg-[#e1e1e1] px-4 shadow z-20 mb-5"
       }
@@ -55,7 +65,9 @@ export default function Bubble(props: any) {
           {props.iconElem}
           <Text
             className={
-              isSelected ? "text-xs text-[#ffd33d]" : "text-xs text-[#b1b1b1]"
+              props.isSelected
+                ? "text-xs text-[#ffd33d]"
+                : "text-xs text-[#b1b1b1]"
             }
           >
             {props.buttonName}

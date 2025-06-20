@@ -4,6 +4,9 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { Link } from "expo-router";
 import moment from "moment";
@@ -19,6 +22,8 @@ import {
   Droplet,
   Bed,
   Dumbbell,
+  Trash2,
+  Camera,
 } from "lucide-react-native";
 
 // ----- / Color code / ----- //
@@ -32,28 +37,84 @@ import {
 // ---------- \o/ ----------- //
 
 export default function Index() {
+  type selectedObjectType = {
+    buttonName: string | null;
+    trigger: string | null;
+    currentState: boolean;
+  };
+
   const formattedDate = moment().format("dddd, MMMM Do YYYY");
   const [breakfastDesc, setBreakfastDesc] = useState<string>("");
   const [lunchDesc, setLunchDesc] = useState<string>("");
   const [dinnerDesc, setDinnerDesc] = useState<string>("");
   const [waterAmount, setWaterAmount] = useState<string>("");
   const [sleepAmount, setSleepAmount] = useState<string>("");
-  const [selectedButton, setSelectedButton] = useState<string[]>([]);
 
-  const addToSelection = (elem: string) => {
-    if (selectedButton.find((e) => e === elem)) {
-      setSelectedButton(selectedButton.filter((e) => e !== elem));
+  const [selectedButton, setSelectedButton] = useState<selectedObjectType[]>([
+    { buttonName: "Breakfast", trigger: null, currentState: false },
+    { buttonName: "Lunch", trigger: null, currentState: false },
+    { buttonName: "Dinner", trigger: null, currentState: false },
+    { buttonName: "Extra", trigger: null, currentState: false },
+    { buttonName: "Water", trigger: null, currentState: false },
+    { buttonName: "Sleep", trigger: null, currentState: false },
+    { buttonName: "Exercice", trigger: null, currentState: false },
+  ]);
+
+  // Checking for currentState and sets it to the opposite, changes trigger too for animation purposes
+  const addToSelection = (elem: { buttonName: string; trigger: string }) => {
+    if (
+      selectedButton.some(
+        (e) => e.buttonName === elem.buttonName && e.currentState === true
+      )
+    ) {
+      setSelectedButton(
+        selectedButton.map((e) => {
+          if (e.buttonName === elem.buttonName && e.currentState === true) {
+            return {
+              buttonName: elem.buttonName,
+              trigger: elem.trigger,
+              currentState: false,
+            };
+          } else {
+            return {
+              buttonName: e.buttonName,
+              trigger: e.trigger,
+              currentState: e.currentState,
+            };
+          }
+        })
+      );
     } else {
-      setSelectedButton([...selectedButton, elem]);
+      setSelectedButton(
+        selectedButton.map((e) => {
+          if (e.buttonName === elem.buttonName && e.currentState === false) {
+            return {
+              buttonName: elem.buttonName,
+              trigger: elem.trigger,
+              currentState: true,
+            };
+          } else {
+            return {
+              buttonName: e.buttonName,
+              trigger: e.trigger,
+              currentState: e.currentState,
+            };
+          }
+        })
+      );
     }
   };
+  // Top page buttons data, with lucide icons and color directly handled there
   const buttonData = [
     {
       buttonName: "Breakfast",
       iconElem: (
         <Coffee
           color={
-            selectedButton.find((elem) => elem === "Breakfast")
+            selectedButton.some(
+              (elem) =>
+                elem.buttonName === "Breakfast" && elem.currentState === true
+            )
               ? "#ffd33d"
               : "#737169"
           }
@@ -66,7 +127,10 @@ export default function Index() {
       iconElem: (
         <Sandwich
           color={
-            selectedButton.find((elem) => elem === "Lunch")
+            selectedButton.some(
+              (elem) =>
+                elem.buttonName === "Lunch" && elem.currentState === true
+            )
               ? "#ffd33d"
               : "#737169"
           }
@@ -79,7 +143,10 @@ export default function Index() {
       iconElem: (
         <CookingPot
           color={
-            selectedButton.find((elem) => elem === "Dinner")
+            selectedButton.some(
+              (elem) =>
+                elem.buttonName === "Dinner" && elem.currentState === true
+            )
               ? "#ffd33d"
               : "#737169"
           }
@@ -92,7 +159,10 @@ export default function Index() {
       iconElem: (
         <Donut
           color={
-            selectedButton.find((elem) => elem === "Extra")
+            selectedButton.some(
+              (elem) =>
+                elem.buttonName === "Extra" && elem.currentState === true
+            )
               ? "#ffd33d"
               : "#737169"
           }
@@ -105,7 +175,10 @@ export default function Index() {
       iconElem: (
         <Droplet
           color={
-            selectedButton.find((elem) => elem === "Water")
+            selectedButton.some(
+              (elem) =>
+                elem.buttonName === "Water" && elem.currentState === true
+            )
               ? "#ffd33d"
               : "#737169"
           }
@@ -118,7 +191,10 @@ export default function Index() {
       iconElem: (
         <Bed
           color={
-            selectedButton.find((elem) => elem === "Sleep")
+            selectedButton.some(
+              (elem) =>
+                elem.buttonName === "Sleep" && elem.currentState === true
+            )
               ? "#ffd33d"
               : "#737169"
           }
@@ -131,7 +207,10 @@ export default function Index() {
       iconElem: (
         <Dumbbell
           color={
-            selectedButton.find((elem) => elem === "Exercice")
+            selectedButton.some(
+              (elem) =>
+                elem.buttonName === "Exercice" && elem.currentState === true
+            )
               ? "#ffd33d"
               : "#737169"
           }
@@ -140,12 +219,93 @@ export default function Index() {
       good: true,
     },
   ];
-
+  // Generating the button array with all according logic, isSelected and trigger
   const buttonArray = buttonData.map((data, i) => {
-    return <Bubble {...data} key={i} addToSelection={addToSelection} />;
+    const currentElement = selectedButton.find(
+      (elem) => elem.buttonName === data.buttonName
+    );
+
+    return (
+      <Bubble
+        {...data}
+        key={i}
+        addToSelection={addToSelection}
+        isSelected={currentElement ? currentElement.currentState : false}
+        from={currentElement ? currentElement.trigger : null}
+      />
+    );
   });
+  // Generating the inputs windows that are generated in the second part of the page
+  const inputsArray = buttonData.map((data, i) => {
+    if (
+      selectedButton.some(
+        (elem) =>
+          elem.buttonName === data.buttonName && elem.currentState === true
+      )
+    )
+      return (
+        <View
+          key={i}
+          className="bg-[#eeeeee] m-2 w-[100%] rounded-2xl flex-col justify-between items-between z-20"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 1230,
+            },
+            shadowOpacity: 0,
+            shadowRadius: 3.84,
+
+            elevation: 4,
+          }}
+        >
+          <View
+            className="w-full h-[30%] rounded-t-2xl bg-[#eaeaea] flex-row justify-between items-center pl-2"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 0,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 2,
+
+              elevation: 1,
+            }}
+          >
+            <Text>{data.buttonName}</Text>
+
+            <TouchableOpacity
+              onPress={() =>
+                addToSelection({
+                  buttonName: data.buttonName,
+                  trigger: "trash",
+                })
+              }
+              className=" h-full w-[10%] rounded-tr-2xl justify-center items-center"
+            >
+              <Trash2 size={16} color="#ff3333" />
+            </TouchableOpacity>
+          </View>
+          <View className="bg-red-200 w-full rounded-b-2xl justify-center items-center">
+            <View className="w-24 h-24 rounded-2xl border-2 border-blue-200  justify-center items-center m-4">
+              <Camera />
+            </View>
+            <TextInput
+              multiline
+              numberOfLines={4}
+              className="w-full bg-red-900"
+            ></TextInput>
+          </View>
+        </View>
+      );
+  });
+
   return (
-    <View className="flex-1 justify-start items-center">
+    <KeyboardAvoidingView
+      className="flex-1 justify-start items-center"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <StatusBar hidden={true} />
       <View className="mt-20 mb-10">
         <Text className="text-black text-2xl font-bold">{formattedDate}</Text>
@@ -155,8 +315,9 @@ export default function Index() {
       <View className="flex-row gap-2 flex-wrap w-full justify-center">
         {buttonArray}
       </View>
-      <View className="w-[90%] h-[1px] bg-gray-200 "></View>
-    </View>
+      <View className="w-[90%] h-[1px] bg-gray-200 separator"></View>
+      <ScrollView className="w-[90%] h-[50%] mt-4">{inputsArray}</ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
