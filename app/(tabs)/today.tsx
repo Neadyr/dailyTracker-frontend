@@ -58,6 +58,10 @@ export default function Index() {
   const [waterAmount, setWaterAmount] = useState<string>("");
   const [sleepAmount, setSleepAmount] = useState<string>("");
   const [modalOpened, setModalOpened] = useState<boolean>(false);
+  const cameraRef = useRef<CameraView | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [preview, setPreview] = useState<string | null>("");
+  console.log(preview);
 
   const [selectedButton, setSelectedButton] = useState<selectedObjectType[]>([
     { buttonName: "Breakfast", trigger: null, currentState: false },
@@ -317,8 +321,14 @@ export default function Index() {
             {preview ? (
               <Image
                 source={preview}
-                contentFit="contain"
-                style={{ width: 300, aspectRatio: 1 }}
+                contentFit="cover"
+                style={{
+                  width: 250,
+                  aspectRatio: 1,
+                  backgroundColor: "red",
+                  borderRadius: 10,
+                  marginTop: 10,
+                }}
               ></Image>
             ) : (
               <TouchableOpacity
@@ -328,10 +338,13 @@ export default function Index() {
                 <Camera />
               </TouchableOpacity>
             )}
+            <View className="w-[90%] h-[1px] bg-gray-300 separator mt-2"></View>
+
             <TextInput
               multiline
               numberOfLines={4}
-              className="w-full  rounded-b-2xl"
+              className="w-[95%] rounded-b-2xl "
+              placeholder="Description"
             ></TextInput>
           </View>
         </View>
@@ -339,10 +352,6 @@ export default function Index() {
   });
 
   // Camera stuff //
-  const cameraRef = useRef<CameraView | null>(null);
-  const [permission, requestPermission] = useCameraPermissions();
-  const [preview, setPreview] = useState<string | null>("");
-  console.log(preview);
 
   const takePicture = async () => {
     const photo: any = await cameraRef.current?.takePictureAsync({
