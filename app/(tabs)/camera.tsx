@@ -40,11 +40,6 @@ export default function Camera() {
     }); // Typescript
     (photo && setPreview(photo.uri)) || "";
   };
-
-  const goBack = () => {
-    //Closing modal
-    console.log("Going back");
-  };
   const renderPicture = () => {
     const retakePicture = () => {
       setPreview(null);

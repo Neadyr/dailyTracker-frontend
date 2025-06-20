@@ -349,7 +349,20 @@ export default function Index() {
           onPress={openModal}
         >
           <TouchableWithoutFeedback className="w-[90%] p-2 bg-gray-600 rounded-2xl justify-center items-center">
-            <View className="w-[90%] bg-red-200 justify-center items-center px-2 py-4 rounded-2xl">
+            <View
+              className="w-[90%] justify-center items-center px-2 py-4 rounded-2xl bg-[#eaeaea]"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 1230,
+                },
+                shadowOpacity: 0,
+                shadowRadius: 3.84,
+
+                elevation: 4,
+              }}
+            >
               <View className="h-[300px] w-[300px]">
                 <CameraComponent />
               </View>
