@@ -37,14 +37,9 @@ export default function Camera() {
   const takePicture = async () => {
     const photo: any = await cameraRef.current?.takePictureAsync({
       quality: 0.3,
-    }); // Javascript
-    // const photo: any = await cameraRef.current?.takePictureAsync({ quality: 0.3 }); // Typescript
+    }); // Typescript
     (photo && setPreview(photo.uri)) || "";
   };
-
-  //   function toggleCameraFacing() {
-  //     setFacing(current => (current === 'back' ? 'front' : 'back'));
-  //   }
 
   const goBack = () => {
     //Closing modal
@@ -71,29 +66,13 @@ export default function Camera() {
 
   const renderCameraView = () => {
     return (
-      <CameraView
-        style={styles.camera}
-        facing={facing}
-        ref={(ref) => (cameraRef.current = ref)}
-      >
-        <View style={styles.buttonContainer}>
-          {/* <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-                <Text style={styles.text}>Flip Camera</Text>
-                   </TouchableOpacity> */}
-          <View style={styles.topButtonContainer}>
-            <Ionicons
-              name="arrow-back-outline"
-              size={48}
-              color="white"
-              onPress={goBack}
-            ></Ionicons>
-          </View>
-          <TouchableOpacity
-            onPress={takePicture}
-            style={styles.shotButton}
-          ></TouchableOpacity>
-        </View>
-      </CameraView>
+      <View className="w-full h-full overflow-hidden rounded-2xl">
+        <CameraView
+          style={styles.camera}
+          facing={facing}
+          ref={(ref) => (cameraRef.current = ref)}
+        ></CameraView>
+      </View>
     );
   };
 
@@ -115,6 +94,7 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
+    borderRadius: "25px",
   },
   buttonContainer: {
     flex: 1,

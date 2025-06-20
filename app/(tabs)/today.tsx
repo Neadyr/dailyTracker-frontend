@@ -7,11 +7,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Modal,
+  SafeAreaView,
+  BackHandler,
+  Pressable,
+  TouchableWithoutFeedback,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import moment from "moment";
-import React, { useState } from "react";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import Bubble from "../components/bubble";
 import {
@@ -25,7 +29,7 @@ import {
   Trash2,
   Camera,
 } from "lucide-react-native";
-
+import CameraComponent from "./camera";
 // ----- / Color code / ----- //
 //    Dark : #212A31        //
 //    Darkish : #2e3944     //
@@ -42,13 +46,15 @@ export default function Index() {
     trigger: string | null;
     currentState: boolean;
   };
-
+  const { uri } = useLocalSearchParams();
+  console.log("Params", uri);
   const formattedDate = moment().format("dddd, MMMM Do YYYY");
   const [breakfastDesc, setBreakfastDesc] = useState<string>("");
   const [lunchDesc, setLunchDesc] = useState<string>("");
   const [dinnerDesc, setDinnerDesc] = useState<string>("");
   const [waterAmount, setWaterAmount] = useState<string>("");
   const [sleepAmount, setSleepAmount] = useState<string>("");
+  const [modalOpened, setModalOpened] = useState<boolean>(false);
 
   const [selectedButton, setSelectedButton] = useState<selectedObjectType[]>([
     { buttonName: "Breakfast", trigger: null, currentState: false },
@@ -59,6 +65,20 @@ export default function Index() {
     { buttonName: "Sleep", trigger: null, currentState: false },
     { buttonName: "Exercice", trigger: null, currentState: false },
   ]);
+
+  useEffect(() => {
+    const backAction = () => {
+      setModalOpened(false);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
 
   // Checking for currentState and sets it to the opposite, changes trigger too for animation purposes
   const addToSelection = (elem: { buttonName: string; trigger: string }) => {
@@ -235,6 +255,9 @@ export default function Index() {
       />
     );
   });
+  const openModal = () => {
+    setModalOpened(!modalOpened);
+  };
   // Generating the inputs windows that are generated in the second part of the page
   const inputsArray = buttonData.map((data, i) => {
     if (
@@ -246,7 +269,7 @@ export default function Index() {
       return (
         <View
           key={i}
-          className="bg-[#eeeeee] m-2 w-[100%] rounded-2xl flex-col justify-between items-between z-20"
+          className="bg-[#eeeeee] my-2 w-[100%] rounded-2xl flex-col justify-between items-between z-20 min-h-[200px]"
           style={{
             shadowColor: "#000",
             shadowOffset: {
@@ -260,7 +283,7 @@ export default function Index() {
           }}
         >
           <View
-            className="w-full h-[30%] rounded-t-2xl bg-[#eaeaea] flex-row justify-between items-center pl-2"
+            className="w-full h-8 rounded-t-2xl bg-[#eaeaea] flex-row justify-between items-center pl-2"
             style={{
               shadowColor: "#000",
               shadowOffset: {
@@ -287,37 +310,58 @@ export default function Index() {
               <Trash2 size={16} color="#ff3333" />
             </TouchableOpacity>
           </View>
-          <View className="bg-red-200 w-full rounded-b-2xl justify-center items-center">
-            <View className="w-24 h-24 rounded-2xl border-2 border-blue-200  justify-center items-center m-4">
+          <View className="w-full rounded-b-2xl justify-center items-center">
+            <TouchableOpacity
+              onPress={openModal}
+              className="w-24 h-24 rounded-2xl border-2 border-blue-200  justify-center items-center m-4"
+            >
               <Camera />
-            </View>
+            </TouchableOpacity>
             <TextInput
               multiline
               numberOfLines={4}
-              className="w-full bg-red-900"
+              className="w-full  rounded-b-2xl"
             ></TextInput>
           </View>
         </View>
       );
   });
-
+  console.log(modalOpened);
   return (
-    <KeyboardAvoidingView
-      className="flex-1 justify-start items-center"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <StatusBar hidden={true} />
-      <View className="mt-20 mb-10">
-        <Text className="text-black text-2xl font-bold">{formattedDate}</Text>
-      </View>
-      {/* <Bubble name="Breakfast" icon={<Coffee />} />
-      <Bubble name="Lunch" icon={<Sandwich />} /> */}
-      <View className="flex-row gap-2 flex-wrap w-full justify-center">
-        {buttonArray}
-      </View>
-      <View className="w-[90%] h-[1px] bg-gray-200 separator"></View>
-      <ScrollView className="w-[90%] h-[50%] mt-4">{inputsArray}</ScrollView>
-    </KeyboardAvoidingView>
+    <>
+      <KeyboardAvoidingView
+        className="flex-1 justify-start items-center "
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <StatusBar hidden={true} />
+        <View className="mt-10 mb-10">
+          <Text className="text-black text-2xl font-bold">{formattedDate}</Text>
+        </View>
+        <View className="flex-row gap-2 flex-wrap w-full justify-center">
+          {buttonArray}
+        </View>
+        <View className="w-[90%] h-[1px] bg-gray-200 separator"></View>
+        <ScrollView className="w-[90%] h-[50%] mt-4">{inputsArray}</ScrollView>
+      </KeyboardAvoidingView>
+      {modalOpened && (
+        <Pressable
+          className="w-[100%] h-[100%] absolute z-50 justify-center items-center transition-all duration-300 opacity-1"
+          onPress={openModal}
+        >
+          <TouchableWithoutFeedback className="w-[90%] p-2 bg-gray-600 rounded-2xl justify-center items-center">
+            <View className="w-[90%] bg-red-200 justify-center items-center px-2 py-4 rounded-2xl">
+              <View className="h-[300px] w-[300px]">
+                <CameraComponent />
+              </View>
+              <View className="flex-row justify-between w-full px-4">
+                <TouchableOpacity className=" w-28 h-14 rounded-xl border-4 border-white mt-2"></TouchableOpacity>
+                <TouchableOpacity className=" w-28 h-14 rounded-xl border-4 border-white mt-2"></TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Pressable>
+      )}
+    </>
   );
 }
 
