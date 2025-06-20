@@ -13,9 +13,12 @@ import {
   Pressable,
   TouchableWithoutFeedback,
 } from "react-native";
+import { Image } from "expo-image";
+import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+
 import { Link, useLocalSearchParams } from "expo-router";
 import moment from "moment";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
 import Bubble from "../components/bubble";
 import {
@@ -311,12 +314,20 @@ export default function Index() {
             </TouchableOpacity>
           </View>
           <View className="w-full rounded-b-2xl justify-center items-center">
-            <TouchableOpacity
-              onPress={openModal}
-              className="w-24 h-24 rounded-2xl border-2 border-blue-200  justify-center items-center m-4"
-            >
-              <Camera />
-            </TouchableOpacity>
+            {preview ? (
+              <Image
+                source={preview}
+                contentFit="contain"
+                style={{ width: 300, aspectRatio: 1 }}
+              ></Image>
+            ) : (
+              <TouchableOpacity
+                onPress={openModal}
+                className="w-24 h-24 rounded-2xl border-2 border-blue-200  justify-center items-center m-4"
+              >
+                <Camera />
+              </TouchableOpacity>
+            )}
             <TextInput
               multiline
               numberOfLines={4}
@@ -326,6 +337,21 @@ export default function Index() {
         </View>
       );
   });
+
+  // Camera stuff //
+  const cameraRef = useRef<CameraView | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [preview, setPreview] = useState<string | null>("");
+  console.log(preview);
+
+  const takePicture = async () => {
+    const photo: any = await cameraRef.current?.takePictureAsync({
+      quality: 0.3,
+    }); // Typescript
+    (photo && setPreview(photo.uri)) || "";
+    setModalOpened(false);
+  };
+
   console.log(modalOpened);
   return (
     <>
@@ -364,10 +390,18 @@ export default function Index() {
               }}
             >
               <View className="h-[300px] w-[300px]">
-                <CameraComponent />
+                <View className="w-full h-full overflow-hidden rounded-2xl">
+                  <CameraView
+                    style={{ flex: 1 }}
+                    ref={(ref) => (cameraRef.current = ref)}
+                  ></CameraView>
+                </View>
               </View>
               <View className="flex-row justify-between w-full px-4">
-                <TouchableOpacity className=" w-28 h-14 rounded-xl border-4 border-white mt-2"></TouchableOpacity>
+                <TouchableOpacity
+                  className=" w-28 h-14 rounded-xl border-4 border-white mt-2"
+                  onPress={takePicture}
+                ></TouchableOpacity>
                 <TouchableOpacity className=" w-28 h-14 rounded-xl border-4 border-white mt-2"></TouchableOpacity>
               </View>
             </View>
