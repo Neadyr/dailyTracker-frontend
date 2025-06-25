@@ -4,7 +4,12 @@ module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        gold: "#ffd33d",
+        goldLight: "#ffedb1",
+      },
+    },
     keyframes: {
       buttonBounce: {
         "0%": { transform: "scale(0)" },

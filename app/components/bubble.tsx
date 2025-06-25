@@ -48,7 +48,7 @@ export default function Bubble(props: any) {
     <View
       className={
         props.isSelected
-          ? "relative w-[40px] h-[40px] rounded-xl justify-center items-end bg-[#e1e1e1] shadow z-20 mb-5"
+          ? "relative w-[40px] h-[40px] rounded-xl justify-center items-end bg-goldLight shadow z-20 mb-5"
           : "relative w-[40px] h-[40px] rounded-xl justify-center items-end bg-[#e1e1e1] shadow z-20 mb-5"
       }
     >

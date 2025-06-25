@@ -12,6 +12,7 @@ import {
   BackHandler,
   Pressable,
   TouchableWithoutFeedback,
+  FlatList,
 } from "react-native";
 import { Image } from "expo-image";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
@@ -32,37 +33,20 @@ import {
   Trash2,
   Camera,
 } from "lucide-react-native";
-import CameraComponent from "./camera";
-// ----- / Color code / ----- //
-//    Dark : #212A31        //
-//    Darkish : #2e3944     //
-//    Darkishish: #34414e   //
-//    Blue : #124e56        //
-//    Greensih : #748D92    //
-//    Grey : #D3D9D4        //
-//    Gold : #ffd33d        //
-// ---------- \o/ ----------- //
-
+import FoodInput from "../components/foodInput";
 export default function Index() {
   type selectedObjectType = {
     buttonName: string | null;
     trigger: string | null;
     currentState: boolean;
   };
-  const { uri } = useLocalSearchParams();
-  console.log("Params", uri);
   const formattedDate = moment().format("dddd, MMMM Do YYYY");
-  const [breakfastDesc, setBreakfastDesc] = useState<string>("");
-  const [lunchDesc, setLunchDesc] = useState<string>("");
-  const [dinnerDesc, setDinnerDesc] = useState<string>("");
-  const [waterAmount, setWaterAmount] = useState<string>("");
-  const [sleepAmount, setSleepAmount] = useState<string>("");
+
   const [modalOpened, setModalOpened] = useState<boolean>(false);
+  const [modalOpenedBy, setModalOpenedBy] = useState<string>("");
+
   const cameraRef = useRef<CameraView | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
-  const [preview, setPreview] = useState<string | null>("");
-  console.log(preview);
-
   const [selectedButton, setSelectedButton] = useState<selectedObjectType[]>([
     { buttonName: "Breakfast", trigger: null, currentState: false },
     { buttonName: "Lunch", trigger: null, currentState: false },
@@ -73,9 +57,23 @@ export default function Index() {
     { buttonName: "Exercice", trigger: null, currentState: false },
   ]);
 
+  const [lockedInput, setLockedInput] = useState<[string] | null>(null);
+  // Preview Bloc //
+  const [preview, setPreview] = useState<string>("");
+
+  const [bfPreview, setBFPreview] = useState<string>("");
+  const [lunchPreview, setLunchPreview] = useState<string>("");
+  const [dinnerPreview, setDinnerPreview] = useState<string>("");
+  const [extraPreview, setExtraPreview] = useState<string>("");
+  const [bfDescription, setBFDescription] = useState<string>("");
+  const [lunchDescription, setLunchDescription] = useState<string>("");
+  const [dinnerDescription, setDinnerDescription] = useState<string>("");
+  const [extraDescription, setExtraDescription] = useState<string>("");
+
+  //Handling back button on android
   useEffect(() => {
     const backAction = () => {
-      setModalOpened(false);
+      closeModal();
       return true;
     };
 
@@ -148,6 +146,7 @@ export default function Index() {
         />
       ),
       good: true,
+      preview: bfPreview,
     },
     {
       buttonName: "Lunch",
@@ -164,6 +163,7 @@ export default function Index() {
         />
       ),
       good: true,
+      preview: lunchPreview,
     },
     {
       buttonName: "Dinner",
@@ -180,6 +180,7 @@ export default function Index() {
         />
       ),
       good: true,
+      preview: dinnerPreview,
     },
     {
       buttonName: "Extra",
@@ -196,6 +197,7 @@ export default function Index() {
         />
       ),
       good: false,
+      preview: extraPreview,
     },
     {
       buttonName: "Water",
@@ -262,8 +264,14 @@ export default function Index() {
       />
     );
   });
-  const openModal = () => {
-    setModalOpened(!modalOpened);
+  const openModal = (from: string) => {
+    setPreview("");
+    setModalOpenedBy(from);
+    setModalOpened(true);
+  };
+  const closeModal = () => {
+    setModalOpened(false);
+    setModalOpenedBy("");
   };
   // Generating the inputs windows that are generated in the second part of the page
   const inputsArray = buttonData.map((data, i) => {
@@ -274,80 +282,13 @@ export default function Index() {
       )
     )
       return (
-        <View
+        <FoodInput
           key={i}
-          className="bg-[#eeeeee] my-2 w-[100%] rounded-2xl flex-col justify-between items-between z-20 min-h-[200px]"
-          style={{
-            shadowColor: "#000",
-            shadowOffset: {
-              width: 0,
-              height: 1230,
-            },
-            shadowOpacity: 0,
-            shadowRadius: 3.84,
-
-            elevation: 4,
-          }}
-        >
-          <View
-            className="w-full h-8 rounded-t-2xl bg-[#eaeaea] flex-row justify-between items-center pl-2"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 0,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 2,
-
-              elevation: 1,
-            }}
-          >
-            <Text>{data.buttonName}</Text>
-
-            <TouchableOpacity
-              onPress={() =>
-                addToSelection({
-                  buttonName: data.buttonName,
-                  trigger: "trash",
-                })
-              }
-              className=" h-full w-[10%] rounded-tr-2xl justify-center items-center"
-            >
-              <Trash2 size={16} color="#ff3333" />
-            </TouchableOpacity>
-          </View>
-          <View className="w-full rounded-b-2xl justify-center items-center">
-            {preview ? (
-              <Image
-                source={preview}
-                contentFit="cover"
-                style={{
-                  width: 250,
-                  aspectRatio: 1,
-                  backgroundColor: "red",
-                  borderRadius: 10,
-                  marginTop: 10,
-                }}
-              ></Image>
-            ) : (
-              <TouchableOpacity
-                onPress={openModal}
-                className="w-24 h-24 rounded-2xl border-2 border-blue-200  justify-center items-center m-4"
-              >
-                <Camera />
-              </TouchableOpacity>
-            )}
-            <View className="w-[90%] h-[1px] bg-gray-300 separator mt-2"></View>
-
-            <TextInput
-              multiline
-              numberOfLines={4}
-              className="w-[95%] rounded-b-2xl "
-              placeholder="Description"
-            ></TextInput>
-          </View>
-        </View>
+          {...data}
+          openModal={openModal}
+          addToSelection={addToSelection}
+          isLocked={null}
+        />
       );
   });
 
@@ -356,12 +297,31 @@ export default function Index() {
   const takePicture = async () => {
     const photo: any = await cameraRef.current?.takePictureAsync({
       quality: 0.3,
-    }); // Typescript
-    (photo && setPreview(photo.uri)) || "";
-    setModalOpened(false);
+    });
+    photo && setPreview(photo.uri);
   };
 
-  console.log(modalOpened);
+  const validatePicture = () => {
+    if (preview) {
+      switch (modalOpenedBy) {
+        case "Breakfast":
+          setBFPreview(preview);
+          break;
+        case "Lunch":
+          setLunchPreview(preview);
+          break;
+        case "Dinner":
+          setDinnerPreview(preview);
+          break;
+        case "Extra":
+          setExtraPreview(preview);
+          break;
+        default:
+          console.error("Photo taken from an unknown source");
+      }
+    }
+    setModalOpened(false);
+  };
   return (
     <>
       <KeyboardAvoidingView
@@ -376,12 +336,19 @@ export default function Index() {
           {buttonArray}
         </View>
         <View className="w-[90%] h-[1px] bg-gray-200 separator"></View>
-        <ScrollView className="w-[90%] h-[50%] mt-4">{inputsArray}</ScrollView>
+        <TouchableWithoutFeedback accessible={false}>
+          <ScrollView
+            className="w-[90%] h-[50%] mt-4 px-1"
+            keyboardShouldPersistTaps="handled"
+          >
+            {inputsArray}
+          </ScrollView>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
       {modalOpened && (
         <Pressable
-          className="w-[100%] h-[100%] absolute z-50 justify-center items-center transition-all duration-300 opacity-1"
-          onPress={openModal}
+          className="w-[100%] h-[100%] absolute z-50 justify-center items-center"
+          onPress={closeModal}
         >
           <TouchableWithoutFeedback className="w-[90%] p-2 bg-gray-600 rounded-2xl justify-center items-center">
             <View
@@ -398,21 +365,65 @@ export default function Index() {
                 elevation: 4,
               }}
             >
-              <View className="h-[300px] w-[300px]">
-                <View className="w-full h-full overflow-hidden rounded-2xl">
-                  <CameraView
-                    style={{ flex: 1 }}
-                    ref={(ref) => (cameraRef.current = ref)}
-                  ></CameraView>
-                </View>
-              </View>
-              <View className="flex-row justify-between w-full px-4">
-                <TouchableOpacity
-                  className=" w-28 h-14 rounded-xl border-4 border-white mt-2"
-                  onPress={takePicture}
-                ></TouchableOpacity>
-                <TouchableOpacity className=" w-28 h-14 rounded-xl border-4 border-white mt-2"></TouchableOpacity>
-              </View>
+              {preview ? (
+                <>
+                  <View className="h-[300px] w-[300px]">
+                    <View className="w-full h-full overflow-hidden rounded-2xl">
+                      <Image
+                        source={preview}
+                        contentFit="cover"
+                        style={{
+                          width: "100%",
+                          aspectRatio: 1,
+                          backgroundColor: "red",
+                          borderRadius: 10,
+                          marginTop: 10,
+                        }}
+                      ></Image>
+                    </View>
+                  </View>
+                  <View className="flex-row justify-between w-full px-4">
+                    <TouchableOpacity
+                      className=" w-28 h-14 rounded-xl border-4 border-white mt-2 items-center justify-center"
+                      onPress={validatePicture}
+                    >
+                      <Text className="text-black">Validate</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className=" w-28 h-14 rounded-xl border-4 border-white mt-2 items-center justify-center"
+                      onPress={() => setPreview("")}
+                    >
+                      <Text className="text-black">Retake</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <View className="h-[300px] w-[300px]">
+                    <View className="w-full h-full overflow-hidden rounded-2xl">
+                      <CameraView
+                        style={{ flex: 1 }}
+                        // @ts-ignore
+                        ref={(ref) => (cameraRef.current = ref)}
+                      ></CameraView>
+                    </View>
+                  </View>
+                  <View className="flex-row justify-between w-full px-4">
+                    <TouchableOpacity
+                      className=" w-28 h-14 rounded-xl border-4 border-white mt-2 items-center justify-center"
+                      onPress={takePicture}
+                    >
+                      <Text className="text-black">Take Picture</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className=" w-28 h-14 rounded-xl border-4 border-white mt-2 items-center justify-center"
+                      onPress={closeModal}
+                    >
+                      <Text className="text-black">Close</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
           </TouchableWithoutFeedback>
         </Pressable>
