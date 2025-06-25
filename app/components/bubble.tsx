@@ -5,7 +5,7 @@ import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
 export default function Bubble(props: any) {
   const position = useSharedValue(-7);
   const [isUsable, setIsUsable] = useState<boolean>(true);
-
+  const [hasPressed, setHasPressed] = useState<boolean>(false);
   useEffect(() => {
     if (!props.isSelected && props.from === "itself") {
       position.value = withSpring(position.value - 6, {
@@ -22,11 +22,13 @@ export default function Bubble(props: any) {
     }
     setTimeout(() => {
       setIsUsable(true);
-    }, 350);
+    }, 1000);
   }, [props.isSelected]);
 
   const press = () => {
+    console.log("is it usable ? ", isUsable);
     if (isUsable) {
+      setHasPressed(true);
       props.isSelected
         ? (position.value = position.value + 2)
         : (position.value = position.value + 6);
@@ -36,7 +38,7 @@ export default function Bubble(props: any) {
   };
 
   const release = () => {
-    if (isUsable) {
+    if (isUsable && hasPressed) {
       props.addToSelection({ buttonName: props.buttonName, trigger: "itself" });
       setIsUsable(false);
     } else {

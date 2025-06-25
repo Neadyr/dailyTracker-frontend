@@ -50,9 +50,29 @@ export default function FoodInput(props: any) {
       console.log("cursor position ->", props.buttonName, balance);
     }
   });
+
+  let backgroundColor;
+  let topBarColor;
+  let sliderColor;
+
+  if (balanceValue > 0) {
+    console.log("good");
+    backgroundColor = "bg-[#e1fff3]";
+    topBarColor = "bg-[#c7f7e4]";
+    sliderColor = "bg-[#c7f7e4]";
+  } else if (balanceValue === 0) {
+    backgroundColor = "bg-[#eeeeee]";
+    topBarColor = "bg-[#e0e0e0]";
+    sliderColor = "bg-[#e0e0e0]";
+  } else {
+    backgroundColor = "bg-[#ffe1e1]";
+    topBarColor = "bg-[#fccfcf]";
+    sliderColor = "bg-[#fccfcf]";
+  }
+  console.log(backgroundColor);
   return (
     <View
-      className="bg-[#eeeeee] my-2 w-[100%] rounded-2xl flex-col justify-between items-between min-h-[200px]"
+      className={`${backgroundColor} my-2 w-[100%] rounded-2xl flex-col justify-between items-between min-h-[200px]`}
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -66,7 +86,7 @@ export default function FoodInput(props: any) {
       }}
     >
       <View
-        className="w-full h-8 rounded-t-2xl bg-[#eaeaea] flex-row justify-between items-center px-2"
+        className={`w-full h-8 rounded-t-2xl ${topBarColor} flex-row justify-between items-center px-2`}
         style={{
           shadowColor: "#000",
           shadowOffset: {
@@ -148,7 +168,19 @@ export default function FoodInput(props: any) {
         ></TextInput>
         <GestureDetector gesture={panGesture}>
           <View
-            className={`bg-red-200 w-32 h-8 mb-2 rounded-3xl p-1 justify-center ${cursorPosition}`}
+            className={`${sliderColor} w-32 h-8 mb-2 rounded-3xl p-1 justify-center ${cursorPosition}`}
+            style={{
+              boxShadow: [
+                {
+                  offsetX: 0,
+                  offsetY: 1,
+                  blurRadius: 4,
+                  spreadDistance: 0,
+                  color: "rgba(0,0,0,0.25)",
+                  inset: true,
+                },
+              ],
+            }}
           >
             <View className="rounded-full h-[90%] aspect-[1/1] bg-white"></View>
           </View>
