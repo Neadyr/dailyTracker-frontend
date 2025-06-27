@@ -11,7 +11,7 @@ module.exports = {
       },
     },
     keyframes: {
-      buttonBounce: {
+      spawn: {
         "0%": { transform: "scale(0)" },
         "40%": { transform: "scale(1.1)" },
         "60%": { transform: "scale(0.9)" },
@@ -21,7 +21,7 @@ module.exports = {
       },
     },
     animation: {
-      buttonBounce: "buttonBounce",
+      spawn: "spawn 1s ease-in-out",
     },
   },
   plugins: [],

@@ -2,22 +2,17 @@ import {
   Text,
   View,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Modal,
-  SafeAreaView,
   BackHandler,
   Pressable,
   TouchableWithoutFeedback,
-  FlatList,
+  Keyboard,
 } from "react-native";
 import { Image } from "expo-image";
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-
-import { Link, useLocalSearchParams } from "expo-router";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
 import React, { useState, useEffect, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -30,10 +25,15 @@ import {
   Droplet,
   Bed,
   Dumbbell,
-  Trash2,
-  Camera,
 } from "lucide-react-native";
 import FoodInput from "../components/foodInput";
+import Water from "../components/water";
+import Sleep from "../components/sleep";
+import Exercice from "../components/exercice";
+
+import Animated, { withSpring, withTiming } from "react-native-reanimated";
+import { TextInput } from "react-native-gesture-handler";
+
 export default function Index() {
   type selectedObjectType = {
     buttonName: string | null;
@@ -62,6 +62,7 @@ export default function Index() {
   const [preview, setPreview] = useState<string>("");
 
   const [bfPreview, setBFPreview] = useState<string>("");
+  const [previewDescription, setPreviewDescription] = useState<string>("");
   const [lunchPreview, setLunchPreview] = useState<string>("");
   const [dinnerPreview, setDinnerPreview] = useState<string>("");
   const [extraPreview, setExtraPreview] = useState<string>("");
@@ -70,6 +71,69 @@ export default function Index() {
   const [dinnerDescription, setDinnerDescription] = useState<string>("");
   const [extraDescription, setExtraDescription] = useState<string>("");
 
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      "keyboardDidShow",
+      handleKeyboardShow
+    );
+    const hideSubscription = Keyboard.addListener(
+      "keyboardDidHide",
+      handleKeyboardHide
+    );
+
+    return () => {
+      showSubscription.remove();
+    };
+  }, []);
+
+  const handleKeyboardShow = (e: any) => {
+    console.log(e);
+
+    setIsKeyboardVisible(true);
+    setKeyboardHeight(e.endCoordinates.height);
+  };
+
+  const handleKeyboardHide = () => {
+    console.log("closed");
+    setIsKeyboardVisible(false);
+    setKeyboardHeight(0);
+  };
+
+  //Reanimated
+  const customEntering = () => {
+    "worklet";
+    const animations = {
+      transform: [{ scale: withSpring(1, { duration: 300 }) }],
+      opacity: 1,
+    };
+    const initialValues = {
+      transform: [{ scale: 0 }],
+      opacity: 0,
+    };
+    return {
+      initialValues,
+      animations,
+    };
+  };
+
+  const customExiting = () => {
+    "worklet";
+    const animations = {
+      transform: [{ scale: withTiming(0, { duration: 300 }) }],
+      opacity: 0,
+    };
+    const initialValues = {
+      transform: [{ scale: 1 }],
+      opacity: 1,
+    };
+    return {
+      initialValues,
+      animations,
+    };
+  };
   //Handling back button on android
   useEffect(() => {
     const backAction = () => {
@@ -147,6 +211,7 @@ export default function Index() {
       ),
       good: true,
       preview: bfPreview,
+      desc: bfDescription,
     },
     {
       buttonName: "Lunch",
@@ -164,6 +229,7 @@ export default function Index() {
       ),
       good: true,
       preview: lunchPreview,
+      desc: lunchDescription,
     },
     {
       buttonName: "Dinner",
@@ -181,6 +247,7 @@ export default function Index() {
       ),
       good: true,
       preview: dinnerPreview,
+      desc: dinnerDescription,
     },
     {
       buttonName: "Extra",
@@ -198,6 +265,7 @@ export default function Index() {
       ),
       good: false,
       preview: extraPreview,
+      desc: extraDescription,
     },
     {
       buttonName: "Water",
@@ -264,6 +332,7 @@ export default function Index() {
       />
     );
   });
+
   const openModal = (from: string) => {
     setPreview("");
     setModalOpenedBy(from);
@@ -273,6 +342,19 @@ export default function Index() {
     setModalOpened(false);
     setModalOpenedBy("");
   };
+  const pickImage = async (from: string) => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "videos"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setPreview(result.assets[0].uri);
+    }
+  };
   // Generating the inputs windows that are generated in the second part of the page
   const inputsArray = buttonData.map((data, i) => {
     if (
@@ -281,15 +363,50 @@ export default function Index() {
           elem.buttonName === data.buttonName && elem.currentState === true
       )
     )
-      return (
-        <FoodInput
-          key={i}
-          {...data}
-          openModal={openModal}
-          addToSelection={addToSelection}
-          isLocked={null}
-        />
-      );
+      switch (data.buttonName) {
+        case "Breakfast":
+        case "Lunch":
+        case "Dinner":
+        case "Extra":
+          return (
+            <FoodInput
+              key={i}
+              {...data}
+              openModal={openModal}
+              addToSelection={addToSelection}
+              isLocked={null}
+              pickImage={pickImage}
+            />
+          );
+          break;
+        case "Water":
+          return (
+            <Water
+              key={i}
+              buttonName={data.buttonName}
+              addToSelection={addToSelection}
+            />
+          );
+          break;
+        case "Sleep":
+          return (
+            <Sleep
+              key={i}
+              buttonName={data.buttonName}
+              addToSelection={addToSelection}
+            />
+          );
+          break;
+        case "Exercice":
+          return (
+            <Exercice
+              key={i}
+              buttonName={data.buttonName}
+              addToSelection={addToSelection}
+            />
+          );
+          break;
+      }
   });
 
   // Camera stuff //
@@ -298,23 +415,29 @@ export default function Index() {
     const photo: any = await cameraRef.current?.takePictureAsync({
       quality: 0.3,
     });
+    console.log(photo.uri);
     photo && setPreview(photo.uri);
   };
 
   const validatePicture = () => {
-    if (preview) {
+    console.log(modalOpenedBy);
+    if (preview || previewDescription) {
       switch (modalOpenedBy) {
         case "Breakfast":
           setBFPreview(preview);
+          setBFDescription(previewDescription);
           break;
         case "Lunch":
           setLunchPreview(preview);
+          setLunchDescription(previewDescription);
           break;
         case "Dinner":
           setDinnerPreview(preview);
+          setDinnerDescription(previewDescription);
           break;
         case "Extra":
           setExtraPreview(preview);
+          setExtraDescription(previewDescription);
           break;
         default:
           console.error("Photo taken from an unknown source");
@@ -323,112 +446,187 @@ export default function Index() {
     setModalOpened(false);
   };
   return (
-    <>
-      <KeyboardAvoidingView
-        className="flex-1 justify-start items-center "
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <StatusBar hidden={true} />
-        <View className="mt-10 mb-10">
-          <Text className="text-black text-2xl font-bold">{formattedDate}</Text>
-        </View>
-        <View className="flex-row gap-2 flex-wrap w-full justify-center">
-          {buttonArray}
-        </View>
-        <View className="w-[90%] h-[1px] bg-gray-200 separator"></View>
-        <TouchableWithoutFeedback accessible={false}>
-          <ScrollView
-            className="w-[90%] h-[50%] mt-4 px-1"
-            keyboardShouldPersistTaps="handled"
-          >
-            {inputsArray}
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-      {modalOpened && (
-        <Pressable
-          className="w-[100%] h-[100%] absolute z-50 justify-center items-center"
-          onPress={closeModal}
+    <View className="flex-1 justify-start items-center">
+      <StatusBar hidden={true} />
+      <View className="mt-10 mb-10">
+        <Text className="text-black text-2xl font-bold">{formattedDate}</Text>
+      </View>
+      <View className="flex-row gap-2 flex-wrap w-full justify-center">
+        {buttonArray}
+      </View>
+      <View className="w-[90%] h-[1px] bg-gray-200 separator"></View>
+      <TouchableWithoutFeedback accessible={false}>
+        <ScrollView
+          className="w-[90%] px-1"
+          keyboardShouldPersistTaps="handled"
         >
-          <TouchableWithoutFeedback className="w-[90%] p-2 bg-gray-600 rounded-2xl justify-center items-center">
-            <View
-              className="w-[90%] justify-center items-center px-2 py-4 rounded-2xl bg-[#eaeaea]"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 1230,
-                },
-                shadowOpacity: 0,
-                shadowRadius: 3.84,
+          {inputsArray}
+        </ScrollView>
+      </TouchableWithoutFeedback>
 
-                elevation: 4,
-              }}
+      {modalOpened && (
+        <Animated.View
+          className={`w-[100%] h-[100%] absolute z-50 justify-start items-start bg-[#00000099]`}
+        >
+          <Animated.View
+            entering={customEntering}
+            className="w-[100%] h-[100%] absolute z-50 justify-center items-center"
+          >
+            <Pressable
+              className={`w-[100%] h-[100%] absolute z-50 ${
+                keyboardHeight > 0 ? "justify-start" : "justify-center"
+              } items-center pt-4`}
+              onPress={closeModal}
             >
-              {preview ? (
-                <>
-                  <View className="h-[300px] w-[300px]">
-                    <View className="w-full h-full overflow-hidden rounded-2xl">
-                      <Image
-                        source={preview}
-                        contentFit="cover"
-                        style={{
-                          width: "100%",
-                          aspectRatio: 1,
-                          backgroundColor: "red",
-                          borderRadius: 10,
-                          marginTop: 10,
-                        }}
-                      ></Image>
-                    </View>
-                  </View>
-                  <View className="flex-row justify-between w-full px-4">
-                    <TouchableOpacity
-                      className=" w-28 h-14 rounded-xl border-4 border-white mt-2 items-center justify-center"
-                      onPress={validatePicture}
-                    >
-                      <Text className="text-black">Validate</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      className=" w-28 h-14 rounded-xl border-4 border-white mt-2 items-center justify-center"
-                      onPress={() => setPreview("")}
-                    >
-                      <Text className="text-black">Retake</Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              ) : (
-                <>
-                  <View className="h-[300px] w-[300px]">
-                    <View className="w-full h-full overflow-hidden rounded-2xl">
-                      <CameraView
-                        style={{ flex: 1 }}
-                        // @ts-ignore
-                        ref={(ref) => (cameraRef.current = ref)}
-                      ></CameraView>
-                    </View>
-                  </View>
-                  <View className="flex-row justify-between w-full px-4">
-                    <TouchableOpacity
-                      className=" w-28 h-14 rounded-xl border-4 border-white mt-2 items-center justify-center"
-                      onPress={takePicture}
-                    >
-                      <Text className="text-black">Take Picture</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      className=" w-28 h-14 rounded-xl border-4 border-white mt-2 items-center justify-center"
-                      onPress={closeModal}
-                    >
-                      <Text className="text-black">Close</Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
-            </View>
-          </TouchableWithoutFeedback>
-        </Pressable>
+              <TouchableWithoutFeedback className="w-[90%] p-2 bg-gray-600 rounded-2xl justify-center items-center">
+                <View
+                  className="w-[90%] justify-center items-center px-2 py-4 rounded-2xl bg-[#eaeaea]"
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: {
+                      width: 0,
+                      height: 1230,
+                    },
+                    shadowOpacity: 0,
+                    shadowRadius: 3.84,
+                    elevation: 4,
+                  }}
+                >
+                  {preview ? (
+                    <>
+                      <View className="h-[300px] w-[300px]">
+                        <View className="w-full h-full overflow-hidden rounded-2xl">
+                          <Image
+                            source={preview}
+                            contentFit="cover"
+                            style={{
+                              width: "100%",
+                              aspectRatio: 1,
+                              backgroundColor: "red",
+                              borderRadius: 10,
+                              marginTop: 10,
+                            }}
+                          ></Image>
+                        </View>
+                      </View>
+                      <View
+                        className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
+                      ></View>
+                      <TextInput
+                        multiline
+                        numberOfLines={2}
+                        className="w-[95%] rounded-b-2xl "
+                        placeholder="Description"
+                        onChangeText={(value) =>
+                          console.log(setPreviewDescription(value))
+                        }
+                      ></TextInput>
+                      <View className="flex-row justify-between w-full px-4">
+                        <TouchableOpacity
+                          className=" w-28 h-14 rounded-xl mt-2 items-center justify-center bg-gray-100"
+                          onPress={validatePicture}
+                          style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                              width: 0,
+                              height: 1230,
+                            },
+                            shadowOpacity: 0,
+                            shadowRadius: 3.84,
+
+                            elevation: 4,
+                          }}
+                        >
+                          <Text className="text-black">Validate</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          className=" w-28 h-14 rounded-xl mt-2 items-center justify-center bg-gray-100"
+                          onPress={() => setPreview("")}
+                          style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                              width: 0,
+                              height: 1230,
+                            },
+                            shadowOpacity: 0,
+                            shadowRadius: 3.84,
+
+                            elevation: 4,
+                          }}
+                        >
+                          <Text className="text-black">Retake</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  ) : (
+                    <>
+                      <View className="h-[300px] w-[300px] animate-ping">
+                        <View
+                          className="w-full h-full overflow-hidden rounded-2xl"
+                          style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                              width: 0,
+                              height: 1230,
+                            },
+                            shadowOpacity: 0,
+                            shadowRadius: 3.84,
+
+                            elevation: 4,
+                          }}
+                        >
+                          <CameraView
+                            style={{ flex: 1 }}
+                            // @ts-ignore
+                            ref={(ref) => (cameraRef.current = ref)}
+                          ></CameraView>
+                        </View>
+                      </View>
+                      <View className="flex-row justify-between w-full px-4">
+                        <TouchableOpacity
+                          className=" w-28 h-14 rounded-xl mt-2 items-center justify-center bg-gray-100"
+                          onPress={takePicture}
+                          style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                              width: 0,
+                              height: 1230,
+                            },
+                            shadowOpacity: 0,
+                            shadowRadius: 3.84,
+
+                            elevation: 4,
+                          }}
+                        >
+                          <Text className="text-black">Take Picture</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          className=" w-28 h-14 rounded-xl mt-2 items-center justify-center bg-gray-100"
+                          onPress={closeModal}
+                          style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                              width: 0,
+                              height: 1230,
+                            },
+                            shadowOpacity: 0,
+                            shadowRadius: 3.84,
+
+                            elevation: 4,
+                          }}
+                        >
+                          <Text className="text-black">Close</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
+                </View>
+              </TouchableWithoutFeedback>
+            </Pressable>
+          </Animated.View>
+        </Animated.View>
       )}
-    </>
+    </View>
   );
 }
 

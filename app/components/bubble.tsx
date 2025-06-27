@@ -1,9 +1,16 @@
 import { View, TouchableOpacity, Text } from "react-native";
 import { useState, useEffect } from "react";
-import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  withSpring,
+  withTiming,
+  withDelay,
+} from "react-native-reanimated";
 
 export default function Bubble(props: any) {
+  // ANIMATIOOOOOOOOON
   const position = useSharedValue(-7);
+
   const [isUsable, setIsUsable] = useState<boolean>(true);
   const [hasPressed, setHasPressed] = useState<boolean>(false);
   useEffect(() => {
@@ -22,11 +29,10 @@ export default function Bubble(props: any) {
     }
     setTimeout(() => {
       setIsUsable(true);
-    }, 1000);
+    }, 300);
   }, [props.isSelected]);
 
   const press = () => {
-    console.log("is it usable ? ", isUsable);
     if (isUsable) {
       setHasPressed(true);
       props.isSelected
