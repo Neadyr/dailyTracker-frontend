@@ -1,0 +1,15 @@
+{
+  "type": [
+    { "cardio": ["Running"] },
+    {
+      "calistenic": [
+        "Push-ups",
+        "Autralian pull-ups",
+        "Bench dips",
+        "Squats",
+        "Plank"
+      ]
+    },
+    { "activity": ["Climbing"] }
+  ]
+}

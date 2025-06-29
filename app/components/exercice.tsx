@@ -6,12 +6,32 @@ import {
   Gesture,
 } from "react-native-gesture-handler";
 import { Trash2 } from "lucide-react-native";
+import DropDown from "./utilities/dropdown";
+
+import exercicesData from "../../exercices.json";
+
 export default function Exercice(props: any) {
   const [balanceValue, setBalanceValue] = useState<number>(0);
+  const [exercicesArray, setExercicesArray] = useState<string[] | null>(null);
+
   let backgroundColor;
   let topBarColor;
   let sliderColor;
   let separatorColor;
+
+  useEffect(() => {
+    let exercices: string[] = [];
+    for (let elem of exercicesData.type) {
+      for (let key in elem) {
+        exercices.push(key);
+        exercices.push("dash");
+        for (let exercice of elem[key]) {
+          exercices.push(exercice);
+        }
+      }
+    }
+    setExercicesArray(exercices);
+  }, []);
 
   if (balanceValue > 0) {
     backgroundColor = "bg-[#e1fff3]";
@@ -73,10 +93,10 @@ export default function Exercice(props: any) {
           <Trash2 size={16} color="#ff3333" />
         </Pressable>
       </View>
-
-      <View
-        className={`w-[90%] ${separatorColor} h-[1px] separator mt-2`}
-      ></View>
+      {/* <View className="w-full h-[90%] bg-gray-200">{dropDown}</View> */}
+      <View className="p-2">
+        <DropDown data={exercicesArray}></DropDown>
+      </View>
     </View>
   );
 }
