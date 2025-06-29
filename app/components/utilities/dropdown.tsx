@@ -1,16 +1,28 @@
 import { View, Text, ScrollView } from "react-native";
-import { useState } from "react";
-import { Pressable } from "react-native-gesture-handler";
+import { useState, useRef } from "react";
+import {
+  Pressable,
+  GestureDetector,
+  Gesture,
+} from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
+
 export default function DropDown(props: { data: string[] | null }) {
   const { data } = props;
 
   const [hasBeenPressed, setHasBeenPressed] = useState<boolean>(false);
   const [pickedExercice, setPickedExercice] = useState<string>("");
+  // const [current, setPickedExercice] = useState<string>("");
 
   const pickExercice = (data: string) => {
     setPickedExercice(data);
     setHasBeenPressed(!hasBeenPressed);
   };
+
+  const panGesture = Gesture.Pan().onUpdate((e) => {
+    console.log(e.absoluteY);
+  });
+
   const dropDown = data?.map((data: string, i: number) => {
     if (data === "cardio" || data === "calistenic" || data === "activity") {
       return (
@@ -31,36 +43,38 @@ export default function DropDown(props: { data: string[] | null }) {
 
   return (
     <View className="w-[100%] h-[90%]">
-      <Pressable
-        style={{
-          width: "90%",
-          height: 30,
-          backgroundColor: "red",
-          borderRadius: 5,
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: 0,
-          },
-          shadowOpacity: 0.25,
-          shadowRadius: 2,
-          display: "flex",
-          justifyContent: "center",
-          paddingLeft: 10,
-          elevation: 1,
-        }}
-        onPress={() => setHasBeenPressed(!hasBeenPressed)}
-      >
-        <Text>{pickedExercice || "Pick an exercice"}</Text>
-      </Pressable>
-      {hasBeenPressed && (
+      <GestureDetector gesture={panGesture}>
+        <Pressable
+          style={{
+            width: "90%",
+            height: 30,
+            borderRadius: 5,
+            backgroundColor: "white",
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 0,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 2,
+            display: "flex",
+            justifyContent: "center",
+            paddingLeft: 10,
+            elevation: 1,
+          }}
+          onPress={() => setHasBeenPressed(!hasBeenPressed)}
+        >
+          <Text>{pickedExercice || "Pick an exercice"}</Text>
+        </Pressable>
+      </GestureDetector>
+      {/* {hasBeenPressed && (
         <ScrollView
           className="absolute h-32 w-[90%] top-[30px] left-0 bg-gray-200 p-2"
           showsVerticalScrollIndicator={false}
         >
           {dropDown}
         </ScrollView>
-      )}
+      )} */}
     </View>
   );
 }
