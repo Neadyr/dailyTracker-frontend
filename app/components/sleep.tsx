@@ -114,12 +114,13 @@ export default function Sleep(props: any) {
 
     if (zone !== lastZoneRef.current) {
       lastZoneRef.current = zone;
-      console.log(zone);
       runOnJS(setAdjustableWidth)(zone);
       runOnJS(setSleepText)(sleepText);
       runOnJS(setBalanceValue)(balance);
     }
   });
+
+  console.log("rerender");
 
   if (balanceValue > 0) {
     backgroundColor = "bg-[#e1fff3]";

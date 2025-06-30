@@ -6,7 +6,7 @@ import {
   Gesture,
 } from "react-native-gesture-handler";
 import { Trash2 } from "lucide-react-native";
-import DropDown from "./utilities/dropdown";
+import InfiniteScroll from "./utilities/infiniteScroll";
 
 import exercicesData from "../../exercices.json";
 
@@ -95,7 +95,9 @@ export default function Exercice(props: any) {
       </View>
       {/* <View className="w-full h-[90%] bg-gray-200">{dropDown}</View> */}
       <View className="p-2">
-        <DropDown data={exercicesArray}></DropDown>
+        <InfiniteScroll data={exercicesArray}></InfiniteScroll>
+        <InfiniteScroll data={null}></InfiniteScroll>
+        <InfiniteScroll data={null}></InfiniteScroll>
       </View>
     </View>
   );

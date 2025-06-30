@@ -7,6 +7,7 @@ import {
 } from "react-native-gesture-handler";
 import { Check, Trash2 } from "lucide-react-native";
 import Checkbox from "expo-checkbox";
+
 export default function Water(props: any) {
   const [balanceValue, setBalanceValue] = useState<number>(0);
   let backgroundColor;
@@ -93,6 +94,7 @@ export default function Water(props: any) {
           />
         </Pressable>
       </View>
+      <View className="bg-red-200 w-8 h-8"></View>
     </View>
   );
 }
