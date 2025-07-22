@@ -5,7 +5,9 @@ import Animated, {
   withSpring,
   withTiming,
   withDelay,
+  interpolateColor,
 } from "react-native-reanimated";
+import { Lock } from "lucide-react-native";
 
 export default function Bubble(props: any) {
   // ANIMATIOOOOOOOOON
@@ -13,25 +15,54 @@ export default function Bubble(props: any) {
 
   const [isUsable, setIsUsable] = useState<boolean>(true);
   const [hasPressed, setHasPressed] = useState<boolean>(false);
+
   useEffect(() => {
-    if (!props.isSelected && props.from === "itself") {
-      position.value = withSpring(position.value - 6, {
-        duration: 350,
-        dampingRatio: 0.2,
-      });
-    } else if (!props.isSelected && props.from === "trash") {
+    if (!props.locked) {
+      if (!props.isSelected && props.from === "itself") {
+        position.value = withSpring(position.value - 6, {
+          duration: 350,
+          dampingRatio: 0.2,
+        });
+      } else if (!props.isSelected && props.from === "trash") {
+        position.value = withSpring(position.value - 4, {
+          duration: 350,
+          dampingRatio: 0.2,
+        });
+      } else {
+        position.value = position.value - 2;
+      }
+      setTimeout(() => {
+        setIsUsable(true);
+      }, 300);
+    } else {
       position.value = withSpring(position.value - 4, {
         duration: 350,
         dampingRatio: 0.2,
       });
-    } else {
-      position.value = position.value - 2;
     }
-    setTimeout(() => {
-      setIsUsable(true);
-    }, 300);
   }, [props.isSelected]);
 
+  if (props.locked) {
+    return (
+      <View
+        className={
+          "relative w-[40px] h-[40px] rounded-xl justify-center items-end bg-[#c1c1c1] shadow z-20 mb-5"
+        }
+      >
+        <Animated.View
+          className="w-[40px] h-[40px] absolute bg-[#737169] z-10 rounded-xl flex-row items-center justify-between"
+          style={{ top: position }}
+        >
+          <TouchableOpacity
+            className="w-[40px] h-[40px] flex-col justify-center items-center"
+            activeOpacity={0.9}
+          >
+            <Lock color={"#f8f8f8"} />
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    );
+  }
   const press = () => {
     if (isUsable) {
       setHasPressed(true);

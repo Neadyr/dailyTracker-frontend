@@ -7,66 +7,62 @@ import {
 } from "react-native-gesture-handler";
 import { runOnJS, useSharedValue } from "react-native-reanimated";
 
-export default function InfiniteScroll(props: { data: string[] | null }) {
-  const { data } = props;
-
-  const [hasBeenPressed, setHasBeenPressed] = useState<boolean>(false);
-  const [pickedExercice, setPickedExercice] = useState<string>("");
-  // const [current, setPickedExercice] = useState<string>("");
+export default function InfiniteScroll(props: {
+  data: string[] | null;
+  arrayLength: number;
+}) {
+  const { data, arrayLength } = props;
   const [value, setValue] = useState<number>(0);
-
   const lastPositionRef = useSharedValue(0);
-  const lastValueRef = useRef<number>(0);
+  const lastValueRef = useSharedValue(0);
 
-  const pickExercice = (data: string) => {
-    setPickedExercice(data);
-    setHasBeenPressed(!hasBeenPressed);
-  };
+  const dataLength = useSharedValue(0);
+
+  useEffect(() => {
+    if (typeof arrayLength === "number" && arrayLength !== null) {
+      dataLength.value = arrayLength;
+    }
+  }, [arrayLength]);
+
+  // const pickExercice = (data: string) => {
+  //   setPickedExercice(data);
+  //   setHasBeenPressed(!hasBeenPressed);
+  // };
 
   const panGesture = useMemo(
     () =>
       Gesture.Pan()
         .onStart(() => {
-          lastValueRef.current = value;
           lastPositionRef.value = 0;
         })
         .onUpdate((e) => {
-          // currentPositionRef.current = Math.round(e.absoluteY);
           const dy = e.translationY - lastPositionRef.value;
 
           const threshold = 15;
           if (dy > threshold) {
             lastPositionRef.value += threshold;
-            lastValueRef.current -= 1;
-            runOnJS(setValue)(lastValueRef.current);
+            lastValueRef.value += 1;
+            if (dataLength.value > 0 && lastValueRef.value > dataLength.value) {
+              lastValueRef.value = 0;
+              runOnJS(setValue)(0);
+            } else {
+              runOnJS(setValue)(lastValueRef.value);
+            }
           }
           if (dy < -threshold) {
             lastPositionRef.value -= threshold;
+            lastValueRef.value -= 1;
 
-            lastValueRef.current += 1;
-            runOnJS(setValue)(lastValueRef.current);
+            if (dataLength.value > 0 && lastValueRef.value < 0) {
+              lastValueRef.value = dataLength.value;
+              runOnJS(setValue)(arrayLength);
+            } else {
+              runOnJS(setValue)(lastValueRef.value);
+            }
           }
         }),
     []
   );
-
-  const dropDown = data?.map((data: string, i: number) => {
-    if (data === "cardio" || data === "calistenic" || data === "activity") {
-      return (
-        <View key={i}>
-          <Text className="text-gray-600 h-6">{data}</Text>
-        </View>
-      );
-    } else if (data === "dash") {
-      return <View key={i} className="w-full h-[1px] bg-black my-[1px]"></View>;
-    } else {
-      return (
-        <Pressable key={i} onPress={() => pickExercice(data)}>
-          <Text className="text-blue-200 my-2">{data}</Text>
-        </Pressable>
-      );
-    }
-  });
   return (
     <GestureDetector gesture={panGesture}>
       <View

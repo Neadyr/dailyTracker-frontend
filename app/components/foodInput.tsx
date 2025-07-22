@@ -15,6 +15,8 @@ import {
   Frown,
   SquarePen,
   Check,
+  CircleCheck,
+  Lock,
 } from "lucide-react-native";
 import { Image } from "expo-image";
 import {
@@ -28,9 +30,6 @@ import * as ImagePicker from "expo-image-picker";
 export default function FoodInput(props: any) {
   const [description, setDescription] = useState<string>("");
 
-  const isLocked = true;
-  const lockData = () => {};
-
   const [cursorPosition, setCursorPosition] = useState<string>("");
   const [balanceValue, setBalanceValue] = useState<number>(0);
 
@@ -40,7 +39,6 @@ export default function FoodInput(props: any) {
   const panGesture = Gesture.Pan().onUpdate((e) => {
     let zone: string;
     let balance: number = 0;
-    console.log(e.absoluteX);
 
     if (e.absoluteX < 155) {
       zone = "items-start";
@@ -84,6 +82,45 @@ export default function FoodInput(props: any) {
     separatorColor = "bg-[#edc4c4]";
   }
 
+  const handleUpload = async () => {
+    const formData = new FormData();
+    // @ts-ignore
+    formData.append(`${props.buttonName}Img`, {
+      uri: props.preview,
+      name: "photo.jpg",
+      type: "image/jpeg",
+    });
+    formData.append(`${props.buttonName}Desc`, props.desc);
+
+    const send = await fetch(
+      `http://192.168.20.77:3000/${
+        props.buttonName === "extra" ? "saveExtra" : "saveFood"
+      }/${balanceValue}`,
+      {
+        method: "PUT",
+        body: formData,
+      }
+    );
+    const response = await send.json();
+
+    if (response.result) {
+      props.clear(props.buttonName);
+    }
+  };
+
+  const handleJeunUpload = async () => {
+    const send = await fetch(`http://192.168.20.77:3000/saveFood/1`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        [`${props.buttonName}Desc`]: "jeun",
+        [`${props.buttonName}Img`]: "jeun",
+      }),
+    });
+    const response = await send.json();
+
+    response.result && props.clear(props.buttonName);
+  };
   return (
     <View
       className={`${backgroundColor} my-2 w-[100%] rounded-2xl flex-col justify-between items-between min-h-[200px]`}
@@ -114,17 +151,13 @@ export default function FoodInput(props: any) {
         }}
       >
         <Text>{props.buttonName}</Text>
-
         <Pressable
-          onPress={() =>
-            props.addToSelection({
-              buttonName: props.buttonName,
-              trigger: "trash",
-            })
-          }
+          onPress={() => {
+            handleUpload();
+          }}
           className=" h-full w-[10%] rounded-tr-2xl justify-center items-center"
         >
-          <Trash2 size={16} color="#ff3333" />
+          <CircleCheck size={16} color="#42a82c" />
         </Pressable>
       </View>
       <View className="w-full rounded-b-2xl justify-center items-center pb-2">
@@ -227,55 +260,56 @@ export default function FoodInput(props: any) {
         >
           {props.desc || "No Description"}
         </Text>
-
-        <GestureDetector gesture={panGesture}>
-          <View
-            className={`${sliderColor} w-32 h-8 my-2 rounded-3xl p-1 justify-center overflow-hidden ${
-              cursorPosition ? cursorPosition : "items-center"
-            }`}
-            style={{
-              boxShadow: [
-                {
-                  offsetX: 0,
-                  offsetY: 1,
-                  blurRadius: 4,
-                  spreadDistance: 0,
-                  color: "rgba(0,0,0,0.25)",
-                  inset: true,
-                },
-              ],
-            }}
-          >
+        <View className="flex-row items-center justify-between w-full px-4">
+          <View className="w-[60px] "></View>
+          <GestureDetector gesture={panGesture}>
             <View
-              className="rounded-full h-[90%] aspect-[1/1] bg-white items-center justify-center"
+              className={`${sliderColor} w-32 h-8 my-2 rounded-3xl p-1 justify-center overflow-hidden ${
+                cursorPosition ? cursorPosition : "items-center"
+              }`}
               style={{
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 1230,
-                },
-                shadowOpacity: 0,
-                shadowRadius: 1,
-
-                elevation: 2,
+                boxShadow: [
+                  {
+                    offsetX: 0,
+                    offsetY: 1,
+                    blurRadius: 4,
+                    spreadDistance: 0,
+                    color: "rgba(0,0,0,0.25)",
+                    inset: true,
+                  },
+                ],
               }}
             >
-              {balanceValue === 1 && <Smile color="#dddddd" size={16} />}
-              {balanceValue === 0 && <Meh color="#dddddd" size={16} />}
-              {balanceValue === -1 && <Frown color="#dddddd" size={16} />}
+              <View
+                className="rounded-full h-[90%] aspect-[1/1] bg-white items-center justify-center"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 1230,
+                  },
+                  shadowOpacity: 0,
+                  shadowRadius: 1,
+
+                  elevation: 2,
+                }}
+              >
+                {balanceValue === 1 && <Smile color="#dddddd" size={16} />}
+                {balanceValue === 0 && <Meh color="#dddddd" size={16} />}
+                {balanceValue === -1 && <Frown color="#dddddd" size={16} />}
+              </View>
             </View>
-          </View>
-        </GestureDetector>
-        <View className="w-[90%] flex-row justify-around px-12 py-2">
+          </GestureDetector>
           <Pressable
+            onPress={() => handleJeunUpload()}
             style={{
-              height: 30,
-              width: 50,
+              backgroundColor: "white",
+              width: 60,
+              height: 20,
+              borderRadius: 20,
               display: "flex",
-              alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#fcfcfc",
-              borderRadius: 5,
+              alignItems: "center",
               shadowColor: "#000",
               shadowOffset: {
                 width: 0,
@@ -287,32 +321,15 @@ export default function FoodInput(props: any) {
               elevation: 2,
             }}
           >
-            <SquarePen />
-          </Pressable>
-          <Pressable
-            style={{
-              height: 30,
-              width: 50,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#fcfcfc",
-              borderRadius: 5,
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 1230,
-              },
-              shadowOpacity: 0,
-              shadowRadius: 1,
-
-              elevation: 2,
-            }}
-          >
-            <Check />
+            <Text>Jeun</Text>
           </Pressable>
         </View>
       </View>
+      {props.isLocked && (
+        <View className="w-full h-full absolute bg-[#00000020] rounded-2xl justify-center items-center">
+          <Lock size={200}></Lock>
+        </View>
+      )}
     </View>
   );
 }

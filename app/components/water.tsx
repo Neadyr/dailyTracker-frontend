@@ -1,14 +1,17 @@
 import { View, TouchableOpacity, Text } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Pressable,
   GestureDetector,
   Gesture,
 } from "react-native-gesture-handler";
-import { Check, Trash2 } from "lucide-react-native";
+import { Check, Trash2, CircleCheck, Lock } from "lucide-react-native";
 import Checkbox from "expo-checkbox";
+import { DataContext } from "../_layout";
 
 export default function Water(props: any) {
+  const { setData } = useContext(DataContext);
+
   const [balanceValue, setBalanceValue] = useState<number>(0);
   let backgroundColor;
   let topBarColor;
@@ -33,7 +36,9 @@ export default function Water(props: any) {
   }
 
   const changeCheckboxValue = () => {
-    console.log("coucou");
+    console.log("hello");
+
+    setData(30);
     if (balanceValue < 1) {
       setBalanceValue(1);
     } else {
@@ -41,9 +46,25 @@ export default function Water(props: any) {
     }
   };
 
+  const handleUpload = async () => {
+    const sending = await fetch(
+      `http://192.168.20.77:3000/saveWater/${balanceValue}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ water: balanceValue > 0 }),
+      }
+    );
+    const response = await sending.json();
+    console.log(response);
+
+    if (response.result) {
+      props.lock(props.buttonName);
+    }
+  };
   return (
     <View
-      className={`${backgroundColor} my-2 w-[100%] rounded-2xl flex-col justify-between items-between min-h-[100px] pb-2`}
+      className={`${backgroundColor} my-2 w-[100%] rounded-2xl flex-col justify-between items-between min-h-[100px]`}
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -73,15 +94,12 @@ export default function Water(props: any) {
         <Text>{props.buttonName}</Text>
 
         <Pressable
-          onPress={() =>
-            props.addToSelection({
-              buttonName: props.buttonName,
-              trigger: "trash",
-            })
-          }
+          onPress={() => {
+            handleUpload();
+          }}
           className=" h-full w-[10%] rounded-tr-2xl justify-center items-center"
         >
-          <Trash2 size={16} color="#ff3333" />
+          <CircleCheck size={16} color="#42a82c" />
         </Pressable>
       </View>
       <View className="min-h-[90px] w-full items-center justify-around px-16">
@@ -94,7 +112,11 @@ export default function Water(props: any) {
           />
         </Pressable>
       </View>
-      <View className="bg-red-200 w-8 h-8"></View>
+      {props.isLocked && (
+        <View className="w-full h-full absolute bg-[#00000020] rounded-2xl justify-center items-center">
+          <Lock size={100}></Lock>
+        </View>
+      )}
     </View>
   );
 }

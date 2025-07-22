@@ -1,11 +1,11 @@
-import { View, TouchableOpacity, Text } from "react-native";
+import { View, TouchableOpacity, Text, TextInput } from "react-native";
 import { useState, useEffect } from "react";
 import {
   Pressable,
   GestureDetector,
   Gesture,
 } from "react-native-gesture-handler";
-import { Trash2 } from "lucide-react-native";
+import { Trash2, CircleCheck } from "lucide-react-native";
 import InfiniteScroll from "./utilities/infiniteScroll";
 
 import exercicesData from "../../exercices.json";
@@ -13,7 +13,8 @@ import exercicesData from "../../exercices.json";
 export default function Exercice(props: any) {
   const [balanceValue, setBalanceValue] = useState<number>(0);
   const [exercicesArray, setExercicesArray] = useState<string[] | null>(null);
-
+  const [arrayLength, setArrayLength] = useState<number>(null);
+  const [exerciceDescription, setExerciceDescription] = useState<string>("");
   let backgroundColor;
   let topBarColor;
   let sliderColor;
@@ -23,14 +24,13 @@ export default function Exercice(props: any) {
     let exercices: string[] = [];
     for (let elem of exercicesData.type) {
       for (let key in elem) {
-        exercices.push(key);
-        exercices.push("dash");
         for (let exercice of elem[key]) {
           exercices.push(exercice);
         }
       }
     }
     setExercicesArray(exercices);
+    setArrayLength(exercices.length - 1 || 0);
   }, []);
 
   if (balanceValue > 0) {
@@ -50,9 +50,24 @@ export default function Exercice(props: any) {
     separatorColor = "bg-[#edc4c4]";
   }
 
+  const handleUpload = async (from: boolean) => {
+    const sending = await fetch(`http://192.168.20.77:3000/saveExercice/1`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ exercice: from ? exerciceDescription : "break" }),
+    });
+    const response = await sending.json();
+    console.log(response);
+
+    if (response.result) {
+      props.clear(props.buttonName);
+    }
+  };
+
+  //Ajouter bouton repos
   return (
     <View
-      className={`${backgroundColor} my-2 w-[100%] rounded-2xl flex-col justify-between items-between min-h-[100px]`}
+      className={`bg-[#eeeeee] my-2 w-[100%] rounded-2xl justify-between items-between min-h-[100px]`}
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -66,7 +81,7 @@ export default function Exercice(props: any) {
       }}
     >
       <View
-        className={`w-full h-8 rounded-t-2xl ${topBarColor} flex-row justify-between items-center px-2`}
+        className={`w-full h-8 rounded-t-2xl bg-[#e0e0e0] flex-row justify-between items-center px-2`}
         style={{
           shadowColor: "#000",
           shadowOffset: {
@@ -80,24 +95,53 @@ export default function Exercice(props: any) {
         }}
       >
         <Text>{props.buttonName}</Text>
-
         <Pressable
-          onPress={() =>
-            props.addToSelection({
-              buttonName: props.buttonName,
-              trigger: "trash",
-            })
-          }
+          onPress={() => {
+            handleUpload(true);
+          }}
           className=" h-full w-[10%] rounded-tr-2xl justify-center items-center"
         >
-          <Trash2 size={16} color="#ff3333" />
+          <CircleCheck size={16} color="#42a82c" />
         </Pressable>
       </View>
       {/* <View className="w-full h-[90%] bg-gray-200">{dropDown}</View> */}
-      <View className="p-2">
-        <InfiniteScroll data={exercicesArray}></InfiniteScroll>
-        <InfiniteScroll data={null}></InfiniteScroll>
-        <InfiniteScroll data={null}></InfiniteScroll>
+      <View className="p-2 h-24 justify-center items-center">
+        {/* <InfiniteScroll
+          data={exercicesArray}
+          arrayLength={arrayLength}
+        ></InfiniteScroll>
+        <InfiniteScroll data={null} arrayLength={0}></InfiniteScroll> */}
+        <TextInput
+          style={{ marginTop: 0 }}
+          multiline
+          numberOfLines={4}
+          placeholder="Describe your session here"
+          onChangeText={(value) => setExerciceDescription(value)}
+          value={exerciceDescription}
+        ></TextInput>
+        <Pressable
+          onPress={() => handleUpload(false)}
+          style={{
+            backgroundColor: "white",
+            width: 60,
+            height: 20,
+            borderRadius: 20,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 1230,
+            },
+            shadowOpacity: 0,
+            shadowRadius: 1,
+
+            elevation: 2,
+          }}
+        >
+          <Text>Break</Text>
+        </Pressable>
       </View>
     </View>
   );

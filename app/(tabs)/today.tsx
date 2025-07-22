@@ -9,12 +9,13 @@ import {
   Pressable,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from "react-native";
 import { Image } from "expo-image";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { StatusBar } from "expo-status-bar";
 import Bubble from "../components/bubble";
 import {
@@ -33,31 +34,49 @@ import Exercice from "../components/exercice";
 
 import Animated, { withSpring, withTiming } from "react-native-reanimated";
 import { TextInput } from "react-native-gesture-handler";
+import { DataContext } from "../_layout";
 
 export default function Index() {
+  const { setData } = useContext(DataContext);
   type selectedObjectType = {
     buttonName: string | null;
     trigger: string | null;
     currentState: boolean;
   };
+
+  type todayDataType = {
+    breakfastImg: string;
+    breakfastDesc: string;
+    lunchImg: string;
+    lunchDesc: string;
+    dinnerImg: string;
+    dinnerDesc: string;
+    extraImg: string;
+    extraDesc: string;
+    sleep: number;
+    water: boolean;
+    exercice: string;
+    balance: number[];
+    date: string;
+  };
   const formattedDate = moment().format("dddd, MMMM Do YYYY");
 
   const [modalOpened, setModalOpened] = useState<boolean>(false);
   const [modalOpenedBy, setModalOpenedBy] = useState<string>("");
-
+  const [todayData, setTodayData] = useState<todayDataType | null>(null);
   const cameraRef = useRef<CameraView | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [selectedButton, setSelectedButton] = useState<selectedObjectType[]>([
-    { buttonName: "Breakfast", trigger: null, currentState: false },
-    { buttonName: "Lunch", trigger: null, currentState: false },
-    { buttonName: "Dinner", trigger: null, currentState: false },
-    { buttonName: "Extra", trigger: null, currentState: false },
-    { buttonName: "Water", trigger: null, currentState: false },
-    { buttonName: "Sleep", trigger: null, currentState: false },
-    { buttonName: "Exercice", trigger: null, currentState: false },
+    { buttonName: "breakfast", trigger: null, currentState: false },
+    { buttonName: "lunch", trigger: null, currentState: false },
+    { buttonName: "dinner", trigger: null, currentState: false },
+    { buttonName: "extra", trigger: null, currentState: false },
+    { buttonName: "water", trigger: null, currentState: false },
+    { buttonName: "sleep", trigger: null, currentState: false },
+    { buttonName: "exercice", trigger: null, currentState: false },
   ]);
 
-  const [lockedInput, setLockedInput] = useState<[string] | null>(null);
+  const [lockedInput, setLockedInput] = useState<boolean>(false);
   // Preview Bloc //
   const [preview, setPreview] = useState<string>("");
 
@@ -71,8 +90,9 @@ export default function Index() {
   const [dinnerDescription, setDinnerDescription] = useState<string>("");
   const [extraDescription, setExtraDescription] = useState<string>("");
 
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
+  const [keyboardHeight, setKeyboardHeight] = useState<number>(0);
+  const [hasInitialized, setHasInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener(
@@ -89,17 +109,87 @@ export default function Index() {
     };
   }, []);
 
-  const handleKeyboardShow = (e: any) => {
-    console.log(e);
+  useEffect(() => {
+    fetch("http://192.168.20.77:3000/initDay")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.result) {
+          if (parseInt(data.dayStreak) > 30) {
+            Alert.alert(
+              `🔥🔥🔥 ${data.dayStreak} days streak 🔥🔥🔥 \n ${data.timeSinceLastBadDay} since last fail`
+            );
+          } else if (parseInt(data.dayStreak) > 15) {
+            Alert.alert(
+              `🔥🔥 ${data.dayStreak} days streak 🔥🔥 \n ${data.timeSinceLastBadDay} since last fail`
+            );
+          } else if (parseInt(data.dayStreak) > 7) {
+            Alert.alert(
+              `🔥 ${data.dayStreak} days streak 🔥 \n ${data.timeSinceLastBadDay} since last fail`
+            );
+          } else {
+            Alert.alert(
+              `${data.dayStreak} day(s) streak ! \n ${data.timeSinceLastBadDay} since last fail`
+            );
+          }
+        }
+        setHasInitialized(true);
+        setData({ streak: data.dayStreak, lastFail: data.timeSinceLastBadDay });
+      });
+  }, []);
 
+  useEffect(() => {
+    if (hasInitialized) {
+      fetch("http://192.168.20.77:3000/checkToday")
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.result) {
+            setTodayData(data.today);
+          }
+        });
+    }
+  }, [hasInitialized, lockedInput]);
+
+  const handleKeyboardShow = (e: any) => {
     setIsKeyboardVisible(true);
     setKeyboardHeight(e.endCoordinates.height);
   };
 
   const handleKeyboardHide = () => {
-    console.log("closed");
     setIsKeyboardVisible(false);
     setKeyboardHeight(0);
+  };
+
+  const clear = (name: string) => {
+    switch (name) {
+      case "breakfast":
+        setBFPreview("");
+        setBFDescription("");
+        setLockedInput(!lockedInput);
+        break;
+      case "lunch":
+        setLunchPreview("");
+        setLunchDescription("");
+        setLockedInput(!lockedInput);
+        break;
+      case "dinner":
+        setDinnerPreview("");
+        setDinnerDescription("");
+        setLockedInput(!lockedInput);
+        break;
+      case "extra":
+        setExtraPreview("");
+        setExtraDescription("");
+        setLockedInput(!lockedInput);
+        break;
+      case "exercice":
+        setLockedInput(!lockedInput);
+        break;
+      case "sleep":
+        setLockedInput(!lockedInput);
+        break;
+      default:
+        console.error("Photo taken from an unknown source");
+    }
   };
 
   //Reanimated
@@ -119,21 +209,6 @@ export default function Index() {
     };
   };
 
-  const customExiting = () => {
-    "worklet";
-    const animations = {
-      transform: [{ scale: withTiming(0, { duration: 300 }) }],
-      opacity: 0,
-    };
-    const initialValues = {
-      transform: [{ scale: 1 }],
-      opacity: 1,
-    };
-    return {
-      initialValues,
-      animations,
-    };
-  };
   //Handling back button on android
   useEffect(() => {
     const backAction = () => {
@@ -196,13 +271,13 @@ export default function Index() {
   // Top page buttons data, with lucide icons and color directly handled there
   const buttonData = [
     {
-      buttonName: "Breakfast",
+      buttonName: "breakfast",
       iconElem: (
         <Coffee
           color={
             selectedButton.some(
               (elem) =>
-                elem.buttonName === "Breakfast" && elem.currentState === true
+                elem.buttonName === "breakfast" && elem.currentState === true
             )
               ? "#ffd33d"
               : "#737169"
@@ -212,15 +287,16 @@ export default function Index() {
       good: true,
       preview: bfPreview,
       desc: bfDescription,
+      locked: todayData?.breakfastImg !== "",
     },
     {
-      buttonName: "Lunch",
+      buttonName: "lunch",
       iconElem: (
         <Sandwich
           color={
             selectedButton.some(
               (elem) =>
-                elem.buttonName === "Lunch" && elem.currentState === true
+                elem.buttonName === "lunch" && elem.currentState === true
             )
               ? "#ffd33d"
               : "#737169"
@@ -230,15 +306,16 @@ export default function Index() {
       good: true,
       preview: lunchPreview,
       desc: lunchDescription,
+      locked: todayData?.lunchImg !== "",
     },
     {
-      buttonName: "Dinner",
+      buttonName: "dinner",
       iconElem: (
         <CookingPot
           color={
             selectedButton.some(
               (elem) =>
-                elem.buttonName === "Dinner" && elem.currentState === true
+                elem.buttonName === "dinner" && elem.currentState === true
             )
               ? "#ffd33d"
               : "#737169"
@@ -248,15 +325,16 @@ export default function Index() {
       good: true,
       preview: dinnerPreview,
       desc: dinnerDescription,
+      locked: todayData?.dinnerImg !== "",
     },
     {
-      buttonName: "Extra",
+      buttonName: "extra",
       iconElem: (
         <Donut
           color={
             selectedButton.some(
               (elem) =>
-                elem.buttonName === "Extra" && elem.currentState === true
+                elem.buttonName === "extra" && elem.currentState === true
             )
               ? "#ffd33d"
               : "#737169"
@@ -268,13 +346,13 @@ export default function Index() {
       desc: extraDescription,
     },
     {
-      buttonName: "Water",
+      buttonName: "water",
       iconElem: (
         <Droplet
           color={
             selectedButton.some(
               (elem) =>
-                elem.buttonName === "Water" && elem.currentState === true
+                elem.buttonName === "water" && elem.currentState === true
             )
               ? "#ffd33d"
               : "#737169"
@@ -282,15 +360,16 @@ export default function Index() {
         />
       ),
       good: true,
+      locked: todayData?.water !== null,
     },
     {
-      buttonName: "Sleep",
+      buttonName: "sleep",
       iconElem: (
         <Bed
           color={
             selectedButton.some(
               (elem) =>
-                elem.buttonName === "Sleep" && elem.currentState === true
+                elem.buttonName === "sleep" && elem.currentState === true
             )
               ? "#ffd33d"
               : "#737169"
@@ -298,15 +377,16 @@ export default function Index() {
         />
       ),
       good: true,
+      locked: todayData?.sleep !== 0,
     },
     {
-      buttonName: "Exercice",
+      buttonName: "exercice",
       iconElem: (
         <Dumbbell
           color={
             selectedButton.some(
               (elem) =>
-                elem.buttonName === "Exercice" && elem.currentState === true
+                elem.buttonName === "exercice" && elem.currentState === true
             )
               ? "#ffd33d"
               : "#737169"
@@ -314,6 +394,7 @@ export default function Index() {
         />
       ),
       good: true,
+      locked: todayData?.exercice !== "",
     },
   ];
   // Generating the button array with all according logic, isSelected and trigger
@@ -327,8 +408,11 @@ export default function Index() {
         {...data}
         key={i}
         addToSelection={addToSelection}
-        isSelected={currentElement ? currentElement.currentState : false}
+        isSelected={
+          currentElement && !data.locked ? currentElement.currentState : false
+        }
         from={currentElement ? currentElement.trigger : null}
+        isLocked={data.locked}
       />
     );
   });
@@ -361,48 +445,56 @@ export default function Index() {
       selectedButton.some(
         (elem) =>
           elem.buttonName === data.buttonName && elem.currentState === true
-      )
+      ) &&
+      !data.locked
     )
       switch (data.buttonName) {
-        case "Breakfast":
-        case "Lunch":
-        case "Dinner":
-        case "Extra":
+        case "breakfast":
+        case "lunch":
+        case "dinner":
+        case "extra":
           return (
             <FoodInput
               key={i}
               {...data}
               openModal={openModal}
               addToSelection={addToSelection}
-              isLocked={null}
+              isLocked={data.locked}
+              clear={clear}
               pickImage={pickImage}
             />
           );
           break;
-        case "Water":
+        case "water":
           return (
             <Water
               key={i}
               buttonName={data.buttonName}
               addToSelection={addToSelection}
+              isLocked={data.locked}
+              clear={clear}
             />
           );
           break;
-        case "Sleep":
+        case "sleep":
           return (
             <Sleep
               key={i}
               buttonName={data.buttonName}
               addToSelection={addToSelection}
+              isLocked={data.locked}
+              clear={clear}
             />
           );
           break;
-        case "Exercice":
+        case "exercice":
           return (
             <Exercice
               key={i}
               buttonName={data.buttonName}
               addToSelection={addToSelection}
+              isLocked={data.locked}
+              clear={clear}
             />
           );
           break;
@@ -415,27 +507,25 @@ export default function Index() {
     const photo: any = await cameraRef.current?.takePictureAsync({
       quality: 0.3,
     });
-    console.log(photo.uri);
     photo && setPreview(photo.uri);
   };
 
   const validatePicture = () => {
-    console.log(modalOpenedBy);
     if (preview || previewDescription) {
       switch (modalOpenedBy) {
-        case "Breakfast":
+        case "breakfast":
           setBFPreview(preview);
           setBFDescription(previewDescription);
           break;
-        case "Lunch":
+        case "lunch":
           setLunchPreview(preview);
           setLunchDescription(previewDescription);
           break;
-        case "Dinner":
+        case "dinner":
           setDinnerPreview(preview);
           setDinnerDescription(previewDescription);
           break;
-        case "Extra":
+        case "extra":
           setExtraPreview(preview);
           setExtraDescription(previewDescription);
           break;
@@ -517,9 +607,7 @@ export default function Index() {
                         numberOfLines={2}
                         className="w-[95%] rounded-b-2xl "
                         placeholder="Description"
-                        onChangeText={(value) =>
-                          console.log(setPreviewDescription(value))
-                        }
+                        onChangeText={(value) => setPreviewDescription(value)}
                       ></TextInput>
                       <View className="flex-row justify-between w-full px-4">
                         <TouchableOpacity
