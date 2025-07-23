@@ -5,21 +5,16 @@ import {
   ScrollView,
   Pressable,
   TouchableWithoutFeedback,
-  TouchableOpacity,
   BackHandler,
   Keyboard,
 } from "react-native";
 import { Image } from "expo-image";
-
-import { SafeAreaView } from "react-native-safe-area-context";
-import { blue } from "react-native-reanimated/lib/typescript/Colors";
+import MonthComponent from "../components/MonthComponent";
 import { useState, useCallback, useContext, useEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import moment from "moment";
-import { Laugh, Meh, Frown, Hourglass } from "lucide-react-native";
 import { DataContext } from "../_layout";
-import CalendarBubble from "../components/calendarBubble";
-import Animated, { withSpring, withTiming } from "react-native-reanimated";
+import Animated, { withSpring } from "react-native-reanimated";
+import { Hourglass, Check, X } from "lucide-react-native";
 
 export default function Calendar() {
   const { data } = useContext(DataContext);
@@ -47,11 +42,10 @@ export default function Calendar() {
 
   useFocusEffect(
     useCallback(() => {
-      fetch("http://192.168.20.77:3000/getAllDays")
+      fetch("http://192.168.20.77:3000/getFormattedAllDays")
         .then((response) => response.json())
         .then((data) => {
-          setToday(data.days[0]);
-          setAllDays(data.days.reverse().splice(1));
+          setAllDays(data.days);
         });
     }, [])
   );
@@ -111,40 +105,11 @@ export default function Calendar() {
     };
   };
 
-  const generateCalendar = (array: any) => {
-    let formattedArray: any = [];
-    for (let element of array) {
-      const currentYear = moment(element.date).year().toString();
-      const currentMonth = months[moment(element.date).month()];
-      const currentDay = moment(element.date).day().toString();
-      let yearBlock = formattedArray.find((current: any) =>
-        current.hasOwnProperty(currentYear)
-      );
-      // console.log("yearblock =>", yearBlock);
-      if (yearBlock) {
-        let monthBlock = yearBlock[currentYear].find((current: any) =>
-          current.hasOwnProperty(currentMonth)
-        );
-        if (monthBlock) {
-          monthBlock[currentMonth].push(currentDay);
-        } else {
-          yearBlock[currentYear].push({ [currentMonth]: [] });
-        }
-      } else {
-        formattedArray.push({ [currentYear]: [] });
-      }
-    }
-
-    // console.log("Final Array =>", formattedArray);
-    setAllDays(formattedArray);
-  };
-
   const displayDay = async (bubbleData: any) => {
     const sending = await fetch(
       `http://192.168.20.77:3000/getSingleDay/${bubbleData.date}`
     );
     const response = await sending.json();
-    console.log(response);
     if (response.result) {
       setModalData(response.today);
       setModalOpen(true);
@@ -152,7 +117,15 @@ export default function Calendar() {
   };
 
   const days = allDays?.map((data, i) => {
-    return <CalendarBubble key={i} {...data} displayDay={displayDay} />;
+    return (
+      <View className="w-full" key={i}>
+        <Text className="text-3xl font-extrabold">{Object.keys(data)[0]}</Text>
+        <MonthComponent
+          data={data[Object.keys(data)[0]]}
+          displayDay={displayDay}
+        />
+      </View>
+    );
   });
 
   return (
@@ -171,31 +144,15 @@ export default function Calendar() {
           elevation: 4,
         }}
       >
-        <Text>
-          {data.streak} day{Number(data.streak) > 1 && "s"} streak
-        </Text>
+        <View className="bg-white px-4 py-2 rounded-xl w-[80%] justify-center items-center">
+          <Text className="text-2xl font-bold">Overall recap</Text>
+          <Text className="text-xl font-semibold">
+            {data.streak} day{Number(data.streak) > 1 && "s"} streak
+          </Text>
+        </View>
       </View>
       <ScrollView>
         <View className="justify-center items-start w-full h-full  flex-wrap flex-row px-2">
-          <View
-            className={`wrap w-[12%] h-[70px] bg-blue-200 rounded-md m-1 justify-between items-center py-2`}
-            style={{
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 1230,
-              },
-              shadowOpacity: 0,
-              shadowRadius: 3.84,
-
-              elevation: 4,
-            }}
-          >
-            <Hourglass />
-            <View className="justify-center items-center">
-              <Text style={{ fontSize: 8 }}>Today</Text>
-            </View>
-          </View>
           {days}
         </View>
       </ScrollView>
@@ -205,17 +162,177 @@ export default function Calendar() {
         >
           <Animated.View
             entering={customEntering}
-            className="w-[100%] h-[100%] absolute z-50 justify-center items-center"
+            className="w-[100%] h-[100%] absolute z-50 justify-center items-center py-10"
           >
-            <Pressable
-              className={`w-[100%] h-[100%] absolute z-50 ${
-                keyboardHeight > 0 ? "justify-start" : "justify-center"
-              } items-center pt-4`}
-              onPress={closeModal}
-            >
-              <TouchableWithoutFeedback className="w-[90%] p-2 bg-gray-600 rounded-2xl justify-center items-center">
+            <TouchableWithoutFeedback className="w-[90%] h-[90%] p-2 bg-gray-600 rounded-2xl justify-center items-center">
+              <ScrollView
+                className="w-[90%] px-10 py-4 rounded-2xl bg-[#eaeaea]"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 1230,
+                  },
+                  shadowOpacity: 0,
+                  shadowRadius: 3.84,
+                  elevation: 4,
+                }}
+                contentContainerStyle={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                }}
+              >
+                <Text className="font-bold text-xl w-[80%] text-center bg-white px-4 py-2 rounded-md">
+                  {modalData.date.slice(0, 10)}
+                </Text>
                 <View
-                  className="w-[90%] justify-center items-center px-2 py-4 rounded-2xl bg-[#eaeaea]"
+                  className={`w-[100%] bg-gray-300 h-[2px] separator my-2`}
+                ></View>
+                <View className="flex-row justify-between items-center px-12">
+                  {modalData.sleep && (
+                    <>
+                      <View className="w-full justify-center items-center">
+                        <Text>Sleep : {modalData.sleep}h</Text>
+                      </View>
+                    </>
+                  )}
+
+                  <>
+                    <View className="w-full justify-center items-center flex-row">
+                      <Text>Water :</Text>
+                      {modalData.water ? (
+                        <Check color={"green"} />
+                      ) : (
+                        <X color={"red"} />
+                      )}
+                    </View>
+                  </>
+                </View>
+                <View
+                  className={`w-[100%] bg-gray-300 h-[1px] separator my-2`}
+                ></View>
+                {modalData.breakfastImg &&
+                  modalData.breakfastImg !== "jeun" && (
+                    <>
+                      <Text>Breakfast</Text>
+                      <View
+                        className={`w-[90%] bg-gray-300 h-[1px] separator my-2`}
+                      ></View>
+                      <View className="h-[300px] w-[300px]">
+                        <View className="w-full h-full overflow-hidden rounded-2xl">
+                          <Image
+                            source={modalData.breakfastImg}
+                            style={{
+                              width: "100%",
+                              aspectRatio: 1,
+                              borderRadius: 10,
+                              marginTop: 6,
+                              marginBottom: 2,
+                            }}
+                          ></Image>
+                        </View>
+                      </View>
+                      {modalData.breakfastDesc ? (
+                        <Text className="py-2">{modalData.breakfastDesc}</Text>
+                      ) : (
+                        <Text>No Description</Text>
+                      )}
+                      <View
+                        className={`w-[100%] bg-gray-300 h-[1px] separator my-2`}
+                      ></View>
+                    </>
+                  )}
+                {modalData.lunchImg && modalData.lunchImg !== "jeun" && (
+                  <>
+                    <Text>Lunch</Text>
+                    <View
+                      className={`w-[90%] bg-gray-300 h-[1px] separator my-2`}
+                    ></View>
+                    <View className="h-[300px] w-[300px]">
+                      <View className="w-full h-full overflow-hidden rounded-2xl">
+                        <Image
+                          source={modalData.lunchImg}
+                          style={{
+                            width: "100%",
+                            aspectRatio: 1,
+                            borderRadius: 10,
+                            marginTop: 2,
+                            marginBottom: 2,
+                          }}
+                        ></Image>
+                      </View>
+                    </View>
+                    {modalData.lunchDesc ? (
+                      <Text className="py-2">{modalData.lunchDesc}</Text>
+                    ) : (
+                      <Text>No Description</Text>
+                    )}
+                    <View
+                      className={`w-[100%] bg-gray-300 h-[1px] separator my-2`}
+                    ></View>
+                  </>
+                )}
+                {modalData.dinnerImg && modalData.dinnerImg !== "jeun" && (
+                  <>
+                    <Text>Dinner</Text>
+                    <View className="h-[300px] w-[300px]">
+                      <View className="w-full h-full overflow-hidden rounded-2xl">
+                        <Image
+                          source={modalData.dinnerImg}
+                          style={{
+                            width: "100%",
+                            aspectRatio: 1,
+                            borderRadius: 10,
+                            marginTop: 2,
+                            marginBottom: 2,
+                          }}
+                        ></Image>
+                      </View>
+                    </View>
+                    {modalData.dinnerDesc ? (
+                      <Text className="py-2">{modalData.dinnerDesc}</Text>
+                    ) : (
+                      <Text>No Description</Text>
+                    )}
+                    <View
+                      className={`w-[100%] bg-gray-300 h-[1px] separator my-2`}
+                    ></View>
+                  </>
+                )}
+                {modalData.extras.length > 0 && (
+                  <>
+                    <Text>Extras</Text>
+                    {modalData.extras.map((data: any, i: number) => {
+                      return (
+                        <>
+                          <View key={i} className="h-[300px] w-[300px]">
+                            <View className="w-full h-full overflow-hidden rounded-2xl">
+                              <Image
+                                source={data.extraImg}
+                                style={{
+                                  width: "100%",
+                                  aspectRatio: 1,
+                                  borderRadius: 10,
+                                  marginTop: 2,
+                                  marginBottom: 2,
+                                }}
+                              ></Image>
+                            </View>
+                          </View>
+
+                          <Text className="py-2">{data.extraDesc}</Text>
+
+                          <View
+                            className={`w-[100%] bg-gray-300 h-[1px] separator my-2`}
+                          ></View>
+                        </>
+                      );
+                    })}
+                  </>
+                )}
+                <Pressable
+                  className="w-[50%] h-8 bg-white rounded-md justify-center items-center mb-6"
                   style={{
                     shadowColor: "#000",
                     shadowOffset: {
@@ -224,134 +341,15 @@ export default function Calendar() {
                     },
                     shadowOpacity: 0,
                     shadowRadius: 3.84,
+
                     elevation: 4,
                   }}
+                  onPress={() => closeModal()}
                 >
-                  <ScrollView>
-                    {modalData.sleep && (
-                      <>
-                        <View className="w-full justify-center items-center">
-                          <Text>{modalData.sleep}h of sleep</Text>
-                        </View>
-                        <View
-                          className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
-                        ></View>
-                      </>
-                    )}
-                    {modalData.water ? (
-                      <>
-                        <View className="w-full justify-center items-center">
-                          <Text>Enough water has been drunk !</Text>
-                        </View>
-                        <View
-                          className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
-                        ></View>
-                      </>
-                    ) : (
-                      <>
-                        <View className="w-full justify-center items-center">
-                          <Text>Drink MOAR</Text>
-                        </View>
-                        <View
-                          className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
-                        ></View>
-                      </>
-                    )}
-                    {modalData.breakfastImg &&
-                      modalData.breakfastImg !== "jeun" && (
-                        <>
-                          <Text>Breakfast</Text>{" "}
-                          <View
-                            className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
-                          ></View>
-                          <View className="h-[300px] w-[300px]">
-                            <View className="w-full h-full overflow-hidden rounded-2xl">
-                              <Image
-                                source={modalData.breakfastImg}
-                                style={{
-                                  width: "100%",
-                                  aspectRatio: 1,
-                                  borderRadius: 10,
-                                  marginTop: 6,
-                                  marginBottom: 2,
-                                }}
-                              ></Image>
-                            </View>
-                          </View>
-                          {modalData.breakfastDesc ? (
-                            <Text className="py-2">
-                              {modalData.breakfastDesc}
-                            </Text>
-                          ) : (
-                            <Text>No Description</Text>
-                          )}
-                          <View
-                            className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
-                          ></View>
-                        </>
-                      )}
-                    <Text>Lunch</Text>{" "}
-                    {modalData.lunchImg && modalData.lunchImg !== "jeun" ? (
-                      <>
-                        <View
-                          className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
-                        ></View>
-                        <View className="h-[300px] w-[300px]">
-                          <View className="w-full h-full overflow-hidden rounded-2xl">
-                            <Image
-                              source={modalData.lunchImg}
-                              style={{
-                                width: "100%",
-                                aspectRatio: 1,
-                                borderRadius: 10,
-                                marginTop: 2,
-                                marginBottom: 2,
-                              }}
-                            ></Image>
-                          </View>
-                        </View>
-                        {modalData.lunchDesc ? (
-                          <Text className="py-2">{modalData.lunchDesc}</Text>
-                        ) : (
-                          <Text>No Description</Text>
-                        )}
-                        <View
-                          className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
-                        ></View>
-                      </>
-                    ) : (
-                      <Text>No data yet</Text>
-                    )}
-                    {modalData.dinnerImg && modalData.dinnerImg !== "jeun" && (
-                      <>
-                        <View className="h-[300px] w-[300px]">
-                          <View className="w-full h-full overflow-hidden rounded-2xl">
-                            <Image
-                              source={modalData.dinnerImg}
-                              style={{
-                                width: "100%",
-                                aspectRatio: 1,
-                                borderRadius: 10,
-                                marginTop: 2,
-                                marginBottom: 2,
-                              }}
-                            ></Image>
-                          </View>
-                        </View>
-                        {modalData.dinnerDesc ? (
-                          <Text className="py-2">{modalData.dinnerDesc}</Text>
-                        ) : (
-                          <Text>No Description</Text>
-                        )}
-                        <View
-                          className={`w-[90%] bg-gray-300 h-[1px] separator mt-2`}
-                        ></View>
-                      </>
-                    )}
-                  </ScrollView>
-                </View>
-              </TouchableWithoutFeedback>
-            </Pressable>
+                  <Text>Close</Text>
+                </Pressable>
+              </ScrollView>
+            </TouchableWithoutFeedback>
           </Animated.View>
         </Animated.View>
       )}

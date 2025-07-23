@@ -5813,6 +5813,11 @@ react-is@^19.1.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.1.0.tgz#805bce321546b7e14c084989c77022351bbdd11b"
   integrity sha512-Oe56aUPnkHyyDxxkvqtd7KkdQP5uIUfHxd5XTb3wE9d/kRnZLmKbDB0GWk919tdQ+mxxPtG6EAs6RMT6i1qtHg==
 
+react-native-animated-numbers@^0.6.3:
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/react-native-animated-numbers/-/react-native-animated-numbers-0.6.3.tgz#a809d1bce0444a4464b6853dbe2cf9979be265af"
+  integrity sha512-V7gIS5j2nA13IC0Wfkzdujf7eNc145z+vntMLoW059fkHZuGJYhDyTjUl9tohx7pKx6TTX0up4wgKwDCpJZSTg==
+
 react-native-css-interop@0.1.22:
   version "0.1.22"
   resolved "https://registry.yarnpkg.com/react-native-css-interop/-/react-native-css-interop-0.1.22.tgz#70cc6ca7a8f14126e123e44a19ceed74dd2a167a"
@@ -7014,6 +7019,18 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+use-count-up@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/use-count-up/-/use-count-up-3.0.1.tgz#315edf4e4be91ead94e6dd34444349d9b8c2c6c3"
+  integrity sha512-jlVsXJYje6jh+xwQaCEYrwHoB+nRyillNEmr21bhe9kw7tpRzyrSq9jQs9UOlo+8hCFkuOmjUihL3IjEK/piVg==
+  dependencies:
+    use-elapsed-time "3.0.2"
+
+use-elapsed-time@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/use-elapsed-time/-/use-elapsed-time-3.0.2.tgz#ef22bf520e60f9873fd102925a2d5cbc5d4faaf5"
+  integrity sha512-2EY9lJ5DWbAvT8wWiEp6Ztnl46DjXz2j78uhWbXaz/bg3OfpbgVucCAlcN8Bih6hTJfFTdVYX9L6ySMn5py/wQ==
 
 use-latest-callback@^0.2.3:
   version "0.2.3"

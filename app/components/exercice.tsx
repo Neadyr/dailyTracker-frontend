@@ -57,7 +57,6 @@ export default function Exercice(props: any) {
       body: JSON.stringify({ exercice: from ? exerciceDescription : "break" }),
     });
     const response = await sending.json();
-    console.log(response);
 
     if (response.result) {
       props.clear(props.buttonName);

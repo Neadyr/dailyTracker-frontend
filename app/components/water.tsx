@@ -1,11 +1,7 @@
-import { View, TouchableOpacity, Text } from "react-native";
-import { useState, useEffect, useContext } from "react";
-import {
-  Pressable,
-  GestureDetector,
-  Gesture,
-} from "react-native-gesture-handler";
-import { Check, Trash2, CircleCheck, Lock } from "lucide-react-native";
+import { View, Text } from "react-native";
+import { useState, useContext } from "react";
+import { Pressable } from "react-native-gesture-handler";
+import { CircleCheck, Lock } from "lucide-react-native";
 import Checkbox from "expo-checkbox";
 import { DataContext } from "../_layout";
 
@@ -36,8 +32,6 @@ export default function Water(props: any) {
   }
 
   const changeCheckboxValue = () => {
-    console.log("hello");
-
     setData(30);
     if (balanceValue < 1) {
       setBalanceValue(1);
@@ -56,7 +50,6 @@ export default function Water(props: any) {
       }
     );
     const response = await sending.json();
-    console.log(response);
 
     if (response.result) {
       props.lock(props.buttonName);
@@ -112,11 +105,6 @@ export default function Water(props: any) {
           />
         </Pressable>
       </View>
-      {props.isLocked && (
-        <View className="w-full h-full absolute bg-[#00000020] rounded-2xl justify-center items-center">
-          <Lock size={100}></Lock>
-        </View>
-      )}
     </View>
   );
 }

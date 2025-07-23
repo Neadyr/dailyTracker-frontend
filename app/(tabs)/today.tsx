@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  Platform,
   ScrollView,
   BackHandler,
   Pressable,
@@ -31,13 +30,16 @@ import FoodInput from "../components/foodInput";
 import Water from "../components/water";
 import Sleep from "../components/sleep";
 import Exercice from "../components/exercice";
-
-import Animated, { withSpring, withTiming } from "react-native-reanimated";
+import Animated, {
+  withSpring,
+  withTiming,
+  useSharedValue,
+} from "react-native-reanimated";
 import { TextInput } from "react-native-gesture-handler";
 import { DataContext } from "../_layout";
-
+import { CountUp } from "use-count-up";
 export default function Index() {
-  const { setData } = useContext(DataContext);
+  const { setData, data } = useContext(DataContext);
   type selectedObjectType = {
     buttonName: string | null;
     trigger: string | null;
@@ -77,7 +79,6 @@ export default function Index() {
   ]);
 
   const [lockedInput, setLockedInput] = useState<boolean>(false);
-  // Preview Bloc //
   const [preview, setPreview] = useState<string>("");
 
   const [bfPreview, setBFPreview] = useState<string>("");
@@ -93,7 +94,8 @@ export default function Index() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
   const [keyboardHeight, setKeyboardHeight] = useState<number>(0);
   const [hasInitialized, setHasInitialized] = useState<boolean>(false);
-
+  const [countUpCanShow, setCountUpCanShow] = useState<boolean>(false);
+  const [valueToCountUp, setValueToCountUp] = useState<number>(12313);
   useEffect(() => {
     const showSubscription = Keyboard.addListener(
       "keyboardDidShow",
@@ -114,25 +116,10 @@ export default function Index() {
       .then((response) => response.json())
       .then((data) => {
         if (data.result) {
-          if (parseInt(data.dayStreak) > 30) {
-            Alert.alert(
-              `🔥🔥🔥 ${data.dayStreak} days streak 🔥🔥🔥 \n ${data.timeSinceLastBadDay} since last fail`
-            );
-          } else if (parseInt(data.dayStreak) > 15) {
-            Alert.alert(
-              `🔥🔥 ${data.dayStreak} days streak 🔥🔥 \n ${data.timeSinceLastBadDay} since last fail`
-            );
-          } else if (parseInt(data.dayStreak) > 7) {
-            Alert.alert(
-              `🔥 ${data.dayStreak} days streak 🔥 \n ${data.timeSinceLastBadDay} since last fail`
-            );
-          } else {
-            Alert.alert(
-              `${data.dayStreak} day(s) streak ! \n ${data.timeSinceLastBadDay} since last fail`
-            );
-          }
+          setValueToCountUp(data.dayStreak);
+          setCountUpCanShow(true);
+          setHasInitialized(true);
         }
-        setHasInitialized(true);
         setData({ streak: data.dayStreak, lastFail: data.timeSinceLastBadDay });
       });
   }, []);
@@ -160,6 +147,7 @@ export default function Index() {
   };
 
   const clear = (name: string) => {
+    setPreviewDescription("");
     switch (name) {
       case "breakfast":
         setBFPreview("");
@@ -417,6 +405,28 @@ export default function Index() {
     );
   });
 
+  const clearPreview = (from: string) => {
+    switch (from) {
+      case "breakfast":
+        setBFPreview("");
+        setBFDescription("");
+        break;
+      case "lunch":
+        setLunchPreview("");
+        setLunchDescription("");
+        break;
+      case "dinner":
+        setDinnerPreview("");
+        setDinnerDescription("");
+        break;
+      case "extra":
+        setExtraPreview("");
+        setExtraDescription("");
+        break;
+      default:
+        console.error("Photo taken from an unknown source");
+    }
+  };
   const openModal = (from: string) => {
     setPreview("");
     setModalOpenedBy(from);
@@ -431,12 +441,31 @@ export default function Index() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images", "videos"],
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [4, 4],
       quality: 1,
     });
 
     if (!result.canceled) {
-      setPreview(result.assets[0].uri);
+      switch (from) {
+        case "breakfast":
+          setBFPreview(result.assets[0].uri);
+          setBFDescription("");
+          break;
+        case "lunch":
+          setLunchPreview(result.assets[0].uri);
+          setLunchDescription("");
+          break;
+        case "dinner":
+          setDinnerPreview(result.assets[0].uri);
+          setDinnerDescription("");
+          break;
+        case "extra":
+          setExtraPreview(result.assets[0].uri);
+          setExtraDescription("");
+          break;
+        default:
+          console.error("Photo taken from an unknown source");
+      }
     }
   };
   // Generating the inputs windows that are generated in the second part of the page
@@ -458,6 +487,7 @@ export default function Index() {
               key={i}
               {...data}
               openModal={openModal}
+              clearPreview={clearPreview}
               addToSelection={addToSelection}
               isLocked={data.locked}
               clear={clear}
@@ -507,6 +537,7 @@ export default function Index() {
     const photo: any = await cameraRef.current?.takePictureAsync({
       quality: 0.3,
     });
+
     photo && setPreview(photo.uri);
   };
 
@@ -533,6 +564,7 @@ export default function Index() {
           console.error("Photo taken from an unknown source");
       }
     }
+    setPreviewDescription("");
     setModalOpened(false);
   };
   return (
@@ -550,7 +582,13 @@ export default function Index() {
           className="w-[90%] px-1"
           keyboardShouldPersistTaps="handled"
         >
-          {inputsArray}
+          {inputsArray.some((e) => e !== undefined) ? (
+            inputsArray
+          ) : (
+            <Text className="w-full h-full text-center mt-[200px]">
+              Press any button to start saving you data
+            </Text>
+          )}
         </ScrollView>
       </TouchableWithoutFeedback>
 
@@ -713,6 +751,18 @@ export default function Index() {
             </Pressable>
           </Animated.View>
         </Animated.View>
+      )}
+      {countUpCanShow && (
+        <View className="w-full h-full bg-[#000000bb] absolute z-50 items-center justify-center">
+          <Pressable
+            onPress={() => setCountUpCanShow(false)}
+            className="w-full h-full absolute z-50 items-center justify-center"
+          >
+            <Text className="text-white font-bold text-[135px]">
+              <CountUp isCounting end={valueToCountUp} duration={3} />
+            </Text>
+          </Pressable>
+        </View>
       )}
     </View>
   );

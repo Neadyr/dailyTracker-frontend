@@ -1,13 +1,12 @@
-import { View, TouchableOpacity, Text } from "react-native";
+import { View, Text } from "react-native";
 import { runOnJS } from "react-native-reanimated";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   Pressable,
   GestureDetector,
   Gesture,
 } from "react-native-gesture-handler";
-import { Trash2, CircleCheck, Lock } from "lucide-react-native";
-import Slider from "@react-native-community/slider";
+import { CircleCheck, Lock } from "lucide-react-native";
 
 export default function Sleep(props: any) {
   const [balanceValue, setBalanceValue] = useState<number>(0);
@@ -16,11 +15,9 @@ export default function Sleep(props: any) {
   const [sleepValue, setSleepValue] = useState<number>(0);
   let backgroundColor;
   let topBarColor;
-  let sliderColor;
   let TextColor;
 
   const lastZoneRef = useRef<string | null>(null);
-  const lastBalanceRef = useRef<number | null>(null);
 
   const panGesture = Gesture.Pan().onUpdate((e) => {
     let zone: string;
@@ -146,17 +143,14 @@ export default function Sleep(props: any) {
   if (balanceValue > 0) {
     backgroundColor = "bg-[#e1fff3]";
     topBarColor = "bg-[#c7f7e4]";
-    sliderColor = "bg-[#c7f7e4]";
     TextColor = "text-[#c7f7e4]";
   } else if (balanceValue === 0) {
     backgroundColor = "bg-[#eeeeee]";
     topBarColor = "bg-[#e0e0e0]";
-    sliderColor = "bg-[#e0e0e0]";
     TextColor = "text-[#e0e0e0]";
   } else {
     backgroundColor = "bg-[#ffe1e1]";
     topBarColor = "bg-[#fccfcf]";
-    sliderColor = "bg-[#fccfcf]";
     TextColor = "text-[#fccfcf]";
   }
 
@@ -168,7 +162,6 @@ export default function Sleep(props: any) {
       }
     );
     const response = await sending.json();
-    console.log(response);
 
     response.result && props.clear(props.buttonName);
   };
@@ -213,15 +206,6 @@ export default function Sleep(props: any) {
         </Pressable>
       </View>
 
-      {/* <Slider
-        style={{ width: 200, height: 40 }}
-        minimumValue={0}
-        maximumValue={10}
-        minimumTrackTintColor={"#FFFFFF"}
-        maximumTrackTintColor="#000000"
-        step={1}
-        thumbTintColor="black"
-      /> */}
       <GestureDetector gesture={panGesture}>
         <View className="min-h-[90px] ">
           <View
@@ -236,11 +220,6 @@ export default function Sleep(props: any) {
           </View>
         </View>
       </GestureDetector>
-      {props.isLocked && (
-        <View className="w-full h-full absolute bg-[#00000020]  rounded-2xl justify-center items-center">
-          <Lock size={100}></Lock>
-        </View>
-      )}
     </View>
   );
 }

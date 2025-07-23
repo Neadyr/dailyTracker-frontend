@@ -90,7 +90,10 @@ export default function FoodInput(props: any) {
       name: "photo.jpg",
       type: "image/jpeg",
     });
-    formData.append(`${props.buttonName}Desc`, props.desc);
+    formData.append(
+      `${props.buttonName}Desc`,
+      props.desc ? props.desc : "No Description"
+    );
 
     const send = await fetch(
       `http://192.168.20.77:3000/${
@@ -175,7 +178,7 @@ export default function FoodInput(props: any) {
               }}
             ></Image>
             <Pressable
-              onPress={() => props.openModal(props.buttonName)}
+              onPress={() => props.clearPreview(props.buttonName)}
               className="absolute top-[225px] left-[249px] w-10 h-10 items-center justify-center bt-2 bt-red-200"
               style={{
                 position: "absolute",
@@ -260,8 +263,12 @@ export default function FoodInput(props: any) {
         >
           {props.desc || "No Description"}
         </Text>
-        <View className="flex-row items-center justify-between w-full px-4">
-          <View className="w-[60px] "></View>
+        <View
+          className={`flex-row items-center ${
+            props.buttonName !== "extra" ? "justify-between" : "justify-center"
+          } w-full px-4`}
+        >
+          {props.buttonName !== "extra" && <View className="w-[60px] "></View>}
           <GestureDetector gesture={panGesture}>
             <View
               className={`${sliderColor} w-32 h-8 my-2 rounded-3xl p-1 justify-center overflow-hidden ${
@@ -300,36 +307,33 @@ export default function FoodInput(props: any) {
               </View>
             </View>
           </GestureDetector>
-          <Pressable
-            onPress={() => handleJeunUpload()}
-            style={{
-              backgroundColor: "white",
-              width: 60,
-              height: 20,
-              borderRadius: 20,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 1230,
-              },
-              shadowOpacity: 0,
-              shadowRadius: 1,
+          {props.buttonName !== "extra" && (
+            <Pressable
+              onPress={() => handleJeunUpload()}
+              style={{
+                backgroundColor: "white",
+                width: 60,
+                height: 20,
+                borderRadius: 20,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 1230,
+                },
+                shadowOpacity: 0,
+                shadowRadius: 1,
 
-              elevation: 2,
-            }}
-          >
-            <Text>Jeun</Text>
-          </Pressable>
+                elevation: 2,
+              }}
+            >
+              <Text>Jeun</Text>
+            </Pressable>
+          )}
         </View>
       </View>
-      {props.isLocked && (
-        <View className="w-full h-full absolute bg-[#00000020] rounded-2xl justify-center items-center">
-          <Lock size={200}></Lock>
-        </View>
-      )}
     </View>
   );
 }

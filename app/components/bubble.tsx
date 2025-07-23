@@ -1,12 +1,6 @@
 import { View, TouchableOpacity, Text } from "react-native";
 import { useState, useEffect } from "react";
-import Animated, {
-  useSharedValue,
-  withSpring,
-  withTiming,
-  withDelay,
-  interpolateColor,
-} from "react-native-reanimated";
+import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
 import { Lock } from "lucide-react-native";
 
 export default function Bubble(props: any) {

@@ -1,18 +1,6 @@
-import { View, TouchableOpacity, Text } from "react-native";
-import { useState, useEffect } from "react";
-import Animated, {
-  useSharedValue,
-  withSpring,
-  withTiming,
-  withDelay,
-  interpolateColor,
-} from "react-native-reanimated";
-import { Lock, Laugh, Meh, Frown, Hourglass } from "lucide-react-native";
-import {
-  Pressable,
-  GestureDetector,
-  Gesture,
-} from "react-native-gesture-handler";
+import { View, Text } from "react-native";
+import { Laugh, Meh, Frown, Hourglass } from "lucide-react-native";
+import { Pressable } from "react-native-gesture-handler";
 export default function CalendarBubble(props: any) {
   let icon;
   let backgroundColor;
@@ -26,7 +14,16 @@ export default function CalendarBubble(props: any) {
     backgroundColor = "bg-[#fccfcf]";
     icon = <Frown />;
   }
+  const today = new Date();
+  const match =
+    today.getUTCFullYear() === new Date(props.date).getUTCFullYear() &&
+    today.getMonth() === new Date(props.date).getMonth() &&
+    today.getDay() === new Date(props.date).getDay();
 
+  if (match) {
+    backgroundColor = "bg-[#77d7f9]";
+    icon = <Hourglass />;
+  }
   return (
     <Pressable
       style={{ height: 70, width: "12%", margin: 3 }}
@@ -50,8 +47,19 @@ export default function CalendarBubble(props: any) {
       >
         <Text>{icon}</Text>
         <View className="justify-center items-center">
-          <Text style={{ fontSize: 8 }}>{props.date.slice(5, 10)}</Text>
-          <Text style={{ fontSize: 8 }}>{props.date.slice(0, 4)}</Text>
+          {!match ? (
+            <>
+              <Text className="font-medium text-xs">
+                {props.date.slice(5, 10)}
+              </Text>
+              <Text style={{ fontSize: 8 }}>{props.date.slice(0, 4)}</Text>
+            </>
+          ) : (
+            <>
+              <Text className="font-medium text-xs">Today</Text>
+              <View className="w-full h-2"></View>
+            </>
+          )}
         </View>
       </View>
     </Pressable>
