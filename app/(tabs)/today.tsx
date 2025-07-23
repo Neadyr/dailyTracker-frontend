@@ -112,7 +112,7 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    fetch("http://192.168.20.77:3000/initDay")
+    fetch("https://daily-tracker-backend-delta.vercel.app/initDay")
       .then((response) => response.json())
       .then((data) => {
         if (data.result) {
@@ -126,7 +126,7 @@ export default function Index() {
 
   useEffect(() => {
     if (hasInitialized) {
-      fetch("http://192.168.20.77:3000/checkToday")
+      fetch("https://daily-tracker-backend-delta.vercel.app/checkToday")
         .then((response) => response.json())
         .then((data) => {
           if (data.result) {

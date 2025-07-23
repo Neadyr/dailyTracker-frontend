@@ -51,11 +51,16 @@ export default function Exercice(props: any) {
   }
 
   const handleUpload = async (from: boolean) => {
-    const sending = await fetch(`http://192.168.20.77:3000/saveExercice/1`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ exercice: from ? exerciceDescription : "break" }),
-    });
+    const sending = await fetch(
+      `https://daily-tracker-backend-delta.vercel.app/saveExercice/1`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          exercice: from ? exerciceDescription : "break",
+        }),
+      }
+    );
     const response = await sending.json();
 
     if (response.result) {

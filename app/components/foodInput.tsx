@@ -96,7 +96,7 @@ export default function FoodInput(props: any) {
     );
 
     const send = await fetch(
-      `http://192.168.20.77:3000/${
+      `https://daily-tracker-backend-delta.vercel.app/${
         props.buttonName === "extra" ? "saveExtra" : "saveFood"
       }/${balanceValue}`,
       {
@@ -112,14 +112,17 @@ export default function FoodInput(props: any) {
   };
 
   const handleJeunUpload = async () => {
-    const send = await fetch(`http://192.168.20.77:3000/saveFood/1`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        [`${props.buttonName}Desc`]: "jeun",
-        [`${props.buttonName}Img`]: "jeun",
-      }),
-    });
+    const send = await fetch(
+      `https://daily-tracker-backend-delta.vercel.app/saveFood/1`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          [`${props.buttonName}Desc`]: "jeun",
+          [`${props.buttonName}Img`]: "jeun",
+        }),
+      }
+    );
     const response = await send.json();
 
     response.result && props.clear(props.buttonName);

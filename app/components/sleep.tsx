@@ -156,7 +156,7 @@ export default function Sleep(props: any) {
 
   const handleUpload = async () => {
     const sending = await fetch(
-      `http://192.168.20.77:3000/saveSleep/${sleepValue}/${balanceValue}`,
+      `https://daily-tracker-backend-delta.vercel.app/saveSleep/${sleepValue}/${balanceValue}`,
       {
         method: "PUT",
       }

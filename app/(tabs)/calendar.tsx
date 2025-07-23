@@ -42,7 +42,9 @@ export default function Calendar() {
 
   useFocusEffect(
     useCallback(() => {
-      fetch("http://192.168.20.77:3000/getFormattedAllDays")
+      fetch(
+        "https://daily-tracker-backend-delta.vercel.app/getFormattedAllDays"
+      )
         .then((response) => response.json())
         .then((data) => {
           setAllDays(data.days);
@@ -107,7 +109,7 @@ export default function Calendar() {
 
   const displayDay = async (bubbleData: any) => {
     const sending = await fetch(
-      `http://192.168.20.77:3000/getSingleDay/${bubbleData.date}`
+      `https://daily-tracker-backend-delta.vercel.app/getSingleDay/${bubbleData.date}`
     );
     const response = await sending.json();
     if (response.result) {

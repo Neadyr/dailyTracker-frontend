@@ -42,7 +42,7 @@ export default function Water(props: any) {
 
   const handleUpload = async () => {
     const sending = await fetch(
-      `http://192.168.20.77:3000/saveWater/${balanceValue}`,
+      `https://daily-tracker-backend-delta.vercel.app/saveWater/${balanceValue}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
