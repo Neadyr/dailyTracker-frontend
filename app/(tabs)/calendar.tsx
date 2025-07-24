@@ -160,7 +160,7 @@ export default function Calendar() {
             {data.streak} day{Number(data.streak) > 1 && "s"} streak
           </Text>
           <View className="absolute h-6 w-6 right-2 bottom-2 items-center justify-center">
-            <Gift color={timeSinceLastGift > 3 ? "#ffd33d" : "grey"} />
+            <Gift color={timeSinceLastGift > 7 ? "#ffd33d" : "grey"} />
           </View>
         </View>
       </View>
