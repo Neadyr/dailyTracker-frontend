@@ -14,7 +14,7 @@ import { useState, useCallback, useContext, useEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { DataContext } from "../_layout";
 import Animated, { withSpring } from "react-native-reanimated";
-import { Hourglass, Check, X } from "lucide-react-native";
+import { Hourglass, Check, X, Gift } from "lucide-react-native";
 
 export default function Calendar() {
   const { data } = useContext(DataContext);
@@ -39,6 +39,7 @@ export default function Calendar() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalData, setModalData] = useState<any>({});
   const [keyboardHeight, setKeyboardHeight] = useState<number>(0);
+  const [timeSinceLastGift, setTimeSinceLastGift] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,6 +49,11 @@ export default function Calendar() {
         .then((response) => response.json())
         .then((data) => {
           setAllDays(data.days);
+        });
+      fetch("https://daily-tracker-backend-delta.vercel.app/lastGift")
+        .then((response) => response.json())
+        .then((lastGift) => {
+          setTimeSinceLastGift(lastGift.timeSinceLastGift);
         });
     }, [])
   );
@@ -113,8 +119,8 @@ export default function Calendar() {
     );
     const response = await sending.json();
     if (response.result) {
-      setModalData(response.today);
       setModalOpen(true);
+      setModalData(response.today);
     }
   };
 
@@ -129,6 +135,8 @@ export default function Calendar() {
       </View>
     );
   });
+
+  console.log(timeSinceLastGift);
 
   return (
     <>
@@ -151,6 +159,9 @@ export default function Calendar() {
           <Text className="text-xl font-semibold">
             {data.streak} day{Number(data.streak) > 1 && "s"} streak
           </Text>
+          <View className="absolute h-6 w-6 right-2 bottom-2 items-center justify-center">
+            <Gift color={timeSinceLastGift > 3 ? "#ffd33d" : "grey"} />
+          </View>
         </View>
       </View>
       <ScrollView>
@@ -186,7 +197,7 @@ export default function Calendar() {
                 }}
               >
                 <Text className="font-bold text-xl w-[80%] text-center bg-white px-4 py-2 rounded-md">
-                  {modalData.date.slice(0, 10)}
+                  {modalData.date ? modalData.date.slice(0, 10) : "Date"}
                 </Text>
                 <View
                   className={`w-[100%] bg-gray-300 h-[2px] separator my-2`}
@@ -195,7 +206,9 @@ export default function Calendar() {
                   {modalData.sleep && (
                     <>
                       <View className="w-full justify-center items-center">
-                        <Text>Sleep : {modalData.sleep}h</Text>
+                        <Text>
+                          Sleep : {modalData.sleep ? modalData.sleep : "0"}h
+                        </Text>
                       </View>
                     </>
                   )}

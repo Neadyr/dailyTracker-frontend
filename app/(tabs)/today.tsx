@@ -444,29 +444,9 @@ export default function Index() {
       aspect: [4, 4],
       quality: 1,
     });
-
-    if (!result.canceled) {
-      switch (from) {
-        case "breakfast":
-          setBFPreview(result.assets[0].uri);
-          setBFDescription("");
-          break;
-        case "lunch":
-          setLunchPreview(result.assets[0].uri);
-          setLunchDescription("");
-          break;
-        case "dinner":
-          setDinnerPreview(result.assets[0].uri);
-          setDinnerDescription("");
-          break;
-        case "extra":
-          setExtraPreview(result.assets[0].uri);
-          setExtraDescription("");
-          break;
-        default:
-          console.error("Photo taken from an unknown source");
-      }
-    }
+    !result.canceled && setPreview(result.assets[0].uri);
+    setModalOpenedBy(from);
+    setModalOpened(true);
   };
   // Generating the inputs windows that are generated in the second part of the page
   const inputsArray = buttonData.map((data, i) => {
@@ -567,6 +547,18 @@ export default function Index() {
     setPreviewDescription("");
     setModalOpened(false);
   };
+
+  if (!hasInitialized) {
+    return (
+      <View className="flex-1 bg-black items-center justify-center">
+        <Text className="text-white font-bold text-3xl">Welcome</Text>
+        <Text className="text-white font-bold text-3xl">
+          To your Daily Tracker
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 justify-start items-center">
       <StatusBar hidden={true} />

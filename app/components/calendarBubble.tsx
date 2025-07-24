@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import { Laugh, Meh, Frown, Hourglass } from "lucide-react-native";
+import { Laugh, Meh, Frown, Hourglass, Gift } from "lucide-react-native";
 import { Pressable } from "react-native-gesture-handler";
 export default function CalendarBubble(props: any) {
   let icon;
@@ -23,6 +23,9 @@ export default function CalendarBubble(props: any) {
   if (match) {
     backgroundColor = "bg-[#77d7f9]";
     icon = <Hourglass />;
+  }
+  if (props.hasGift) {
+    icon = <Gift />;
   }
   return (
     <Pressable

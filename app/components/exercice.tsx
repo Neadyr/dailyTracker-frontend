@@ -109,7 +109,7 @@ export default function Exercice(props: any) {
         </Pressable>
       </View>
       {/* <View className="w-full h-[90%] bg-gray-200">{dropDown}</View> */}
-      <View className="p-2 h-24 justify-center items-center">
+      <View className="p-2 justify-center items-center">
         {/* <InfiniteScroll
           data={exercicesArray}
           arrayLength={arrayLength}
