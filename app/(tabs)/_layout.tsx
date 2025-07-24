@@ -17,10 +17,10 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="today"
+        name="Today"
         options={{
           headerShown: false,
-          title: "today",
+          title: "Today",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "home-sharp" : "home-outline"}
