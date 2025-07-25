@@ -98,22 +98,22 @@ export default function Index() {
   const [countUpCanShow, setCountUpCanShow] = useState<boolean>(false);
   const [valueToCountUp, setValueToCountUp] = useState<number>(12313);
 
-  if (!permission) {
-    // Camera permissions are still loading.
-    return <View />;
-  }
+  // if (!permission) {
+  //   // Camera permissions are still loading.
+  //   return <View />;
+  // }
 
-  if (!permission.granted) {
-    // Camera permissions are not granted yet.
-    return (
-      <View className="flex-1 items-center justify-center">
-        <Text>We need your permission to show the camera</Text>
-        <TouchableOpacity onPress={requestPermission}>
-          <Text>grant permission</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  // if (!permission.granted) {
+  //   // Camera permissions are not granted yet.
+  //   return (
+  //     <View className="flex-1 items-center justify-center">
+  //       <Text>We need your permission to show the camera</Text>
+  //       <TouchableOpacity onPress={requestPermission}>
+  //         <Text>grant permission</Text>
+  //       </TouchableOpacity>
+  //     </View>
+  //   );
+  // }
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener(
