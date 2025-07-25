@@ -17,7 +17,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="Today"
+        name="index"
         options={{
           headerShown: false,
           title: "Today",

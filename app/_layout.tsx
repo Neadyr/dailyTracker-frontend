@@ -16,12 +16,12 @@ export default function RootLayout() {
   const [data, setData] = useState<any>(null);
 
   return (
-    <DataContext.Provider value={{ data, setData }}>
-      <GestureHandlerRootView>
+    <GestureHandlerRootView>
+      <DataContext.Provider value={{ data, setData }}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
-      </GestureHandlerRootView>
-    </DataContext.Provider>
+      </DataContext.Provider>
+    </GestureHandlerRootView>
   );
 }
