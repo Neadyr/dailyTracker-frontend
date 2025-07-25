@@ -444,9 +444,11 @@ export default function Index() {
       aspect: [4, 4],
       quality: 1,
     });
-    !result.canceled && setPreview(result.assets[0].uri);
-    setModalOpenedBy(from);
-    setModalOpened(true);
+    if (!result.canceled) {
+      setPreview(result.assets[0].uri);
+      setModalOpenedBy(from);
+      setModalOpened(true);
+    }
   };
   // Generating the inputs windows that are generated in the second part of the page
   const inputsArray = buttonData.map((data, i) => {
