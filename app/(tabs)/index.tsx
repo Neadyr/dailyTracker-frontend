@@ -12,7 +12,7 @@ import {
   Button,
 } from "react-native";
 import { Image } from "expo-image";
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { CameraView, useCameraPermissions, Camera } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
 import React, { useState, useEffect, useRef, useContext } from "react";
@@ -98,6 +98,18 @@ export default function Index() {
   const [countUpCanShow, setCountUpCanShow] = useState<boolean>(false);
   const [valueToCountUp, setValueToCountUp] = useState<number>(12313);
 
+  const [hasPermission, setHasPermission] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const result = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(result && result?.status === "granted");
+    })();
+  }, []);
+
+  if (!hasPermission) {
+    return <View />;
+  }
   // if (!permission) {
   //   // Camera permissions are still loading.
   //   return <View />;
