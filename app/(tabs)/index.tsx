@@ -177,9 +177,31 @@ export default function Index() {
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View className="flex-1 items-center justify-center">
-        <Text>We need your permission to show the camera</Text>
-        <TouchableOpacity onPress={requestPermission}>
+      <View className="flex-1 bg-black items-center justify-center">
+        <Text className="text-white font-semi-bold">
+          We need your permission to show the camera
+        </Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: "white",
+            width: 60,
+            height: 20,
+            borderRadius: 20,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 1230,
+            },
+            shadowOpacity: 0,
+            shadowRadius: 1,
+
+            elevation: 2,
+          }}
+          onPress={requestPermission}
+        >
           <Text>grant permission</Text>
         </TouchableOpacity>
       </View>
