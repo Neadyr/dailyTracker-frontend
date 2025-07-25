@@ -116,15 +116,6 @@ export default function Index() {
       "keyboardDidShow",
       handleKeyboardShow
     );
-    const backAction = () => {
-      closeModal();
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
 
     fetch("https://daily-tracker-backend-delta.vercel.app/initDay")
       .then((response) => response.json())
@@ -139,6 +130,20 @@ export default function Index() {
 
     return () => {
       showSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    const backAction = () => {
+      closeModal();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+    return () => {
       backHandler.remove();
     };
   }, []);
@@ -154,6 +159,11 @@ export default function Index() {
         });
     }
   }, [hasInitialized, lockedInput]);
+
+  const closeModal = () => {
+    setModalOpened(false);
+    setModalOpenedBy("");
+  };
 
   const handleKeyboardShow = (e: any) => {
     setIsKeyboardVisible(true);
@@ -449,10 +459,7 @@ export default function Index() {
     setModalOpenedBy(from);
     setModalOpened(true);
   };
-  const closeModal = () => {
-    setModalOpened(false);
-    setModalOpenedBy("");
-  };
+
   const pickImage = async (from: string) => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
