@@ -6,8 +6,6 @@ import Checkbox from "expo-checkbox";
 import { DataContext } from "../_layout";
 
 export default function Water(props: any) {
-  const { setData } = useContext(DataContext);
-
   const [balanceValue, setBalanceValue] = useState<number>(0);
   let backgroundColor;
   let topBarColor;
@@ -32,7 +30,6 @@ export default function Water(props: any) {
   }
 
   const changeCheckboxValue = () => {
-    setData(30);
     if (balanceValue < 1) {
       setBalanceValue(1);
     } else {
@@ -52,7 +49,7 @@ export default function Water(props: any) {
     const response = await sending.json();
 
     if (response.result) {
-      props.lock(props.buttonName);
+      props.clear(props.buttonName);
     }
   };
   return (
