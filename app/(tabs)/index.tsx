@@ -106,11 +106,11 @@ export default function Index() {
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View style={styles.container}>
-        <Text style={styles.message}>
-          We need your permission to show the camera
-        </Text>
-        <Button onPress={requestPermission} title="grant permission" />
+      <View className="flex-1 items-center justify-center">
+        <Text>We need your permission to show the camera</Text>
+        <TouchableOpacity onPress={requestPermission}>
+          <Text>grant permission</Text>
+        </TouchableOpacity>
       </View>
     );
   }
