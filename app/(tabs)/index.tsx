@@ -98,33 +98,17 @@ export default function Index() {
   const [countUpCanShow, setCountUpCanShow] = useState<boolean>(false);
   const [valueToCountUp, setValueToCountUp] = useState<number>(12313);
 
-  const [hasPermission, setHasPermission] = useState(false);
+  // const [hasPermission, setHasPermission] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const result = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(result && result?.status === "granted");
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const result = await Camera.requestCameraPermissionsAsync();
+  //     setHasPermission(result && result?.status === "granted");
+  //   })();
+  // }, []);
 
-  if (!hasPermission) {
-    return <View />;
-  }
-  // if (!permission) {
-  //   // Camera permissions are still loading.
+  // if (!hasPermission) {
   //   return <View />;
-  // }
-
-  // if (!permission.granted) {
-  //   // Camera permissions are not granted yet.
-  //   return (
-  //     <View className="flex-1 items-center justify-center">
-  //       <Text>We need your permission to show the camera</Text>
-  //       <TouchableOpacity onPress={requestPermission}>
-  //         <Text>grant permission</Text>
-  //       </TouchableOpacity>
-  //     </View>
-  //   );
   // }
 
   useEffect(() => {
@@ -132,17 +116,16 @@ export default function Index() {
       "keyboardDidShow",
       handleKeyboardShow
     );
-    const hideSubscription = Keyboard.addListener(
-      "keyboardDidHide",
-      handleKeyboardHide
+    const backAction = () => {
+      closeModal();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
     );
 
-    return () => {
-      showSubscription.remove();
-    };
-  }, []);
-
-  useEffect(() => {
     fetch("https://daily-tracker-backend-delta.vercel.app/initDay")
       .then((response) => response.json())
       .then((data) => {
@@ -153,6 +136,11 @@ export default function Index() {
         }
         setData({ streak: data.dayStreak, lastFail: data.timeSinceLastBadDay });
       });
+
+    return () => {
+      showSubscription.remove();
+      backHandler.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -171,11 +159,22 @@ export default function Index() {
     setIsKeyboardVisible(true);
     setKeyboardHeight(e.endCoordinates.height);
   };
+  if (!permission) {
+    // Camera permissions are still loading.
+    return <View />;
+  }
 
-  const handleKeyboardHide = () => {
-    setIsKeyboardVisible(false);
-    setKeyboardHeight(0);
-  };
+  if (!permission.granted) {
+    // Camera permissions are not granted yet.
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text>We need your permission to show the camera</Text>
+        <TouchableOpacity onPress={requestPermission}>
+          <Text>grant permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const clear = (name: string) => {
     setPreviewDescription("");
@@ -229,19 +228,6 @@ export default function Index() {
   };
 
   //Handling back button on android
-  useEffect(() => {
-    const backAction = () => {
-      closeModal();
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
-
-    return () => backHandler.remove();
-  }, []);
 
   // Checking for currentState and sets it to the opposite, changes trigger too for animation purposes
   const addToSelection = (elem: { buttonName: string; trigger: string }) => {
