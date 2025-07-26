@@ -182,10 +182,9 @@ export default function Index() {
           We need your permission to show the camera
         </Text>
         <TouchableOpacity
+          className="p-2 mt-4"
           style={{
             backgroundColor: "white",
-            width: 60,
-            height: 20,
             borderRadius: 20,
             display: "flex",
             justifyContent: "center",
@@ -202,7 +201,7 @@ export default function Index() {
           }}
           onPress={requestPermission}
         >
-          <Text>grant permission</Text>
+          <Text className="text-black">Grant permission</Text>
         </TouchableOpacity>
       </View>
     );
